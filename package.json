@@ -1,0 +1,22 @@
+{
+  "name": "wordplay",
+  "description": "Some word games.",
+  "license": "MIT",
+  "copyright": "2023",
+  "version": "1.0.0",
+  "author": "mdb@samskivert.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samskivert/wordplay.git"
+  },
+  "scripts": {},
+  "devDependencies": {
+    "esbuild": "^0.19.9",
+    "esbuild-server": "^0.3.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@tweenjs/tween.js": "^21.0.0",
+    "pixi.js": "^7.3.2"
+  }
+}
