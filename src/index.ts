@@ -1,13 +1,14 @@
 import { Application } from "pixi.js"
+import { update } from "@tweenjs/tween.js"
 import { Board, Rack } from "./tile"
 import { Dragger } from "./dragger"
-import { update } from "@tweenjs/tween.js"
+import { Bag } from "./bag"
 
 const app = new Application({
   view: document.getElementById("pixi-canvas") as HTMLCanvasElement,
   resolution: window.devicePixelRatio || 1,
   autoDensity: true,
-  backgroundColor: 0x6495ed,
+  backgroundColor: 0x429EBD,
   // width: 1024,
   // height: 768
 })
@@ -32,6 +33,8 @@ board.addTile("R", 3, 2)
 board.addTile("T", 4, 2)
 board.addTile("Y", 5, 2)
 
+const bag = new Bag()
+
 const rack = new Rack(app.stage, 7)
 rack.x = board.x
 rack.y = board.y + board.height + 30
@@ -42,6 +45,6 @@ function addTile (l :string, i :number) {
   const tile = rack.addTile(l, i)
   dragger.addDraggable(tile, () => tile.returnToHost())
 }
-addTile("Z", 0)
-addTile("A", 1)
-addTile("C", 2)
+for (let ii = 0; ii < rack.size; ii += 1) {
+  addTile(bag.draw(), ii)
+}
