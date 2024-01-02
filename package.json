@@ -1,5 +1,6 @@
 {
   "name": "wordplay",
+  "type": "module",
   "description": "Some word games.",
   "license": "MIT",
   "copyright": "2023",
@@ -9,14 +10,21 @@
     "type": "git",
     "url": "https://github.com/samskivert/wordplay.git"
   },
-  "scripts": {},
+  "scripts": {
+    "compile": "tsc -p .",
+    "test": "jest"
+  },
   "devDependencies": {
+    "@types/jest": "^29.5.11",
     "esbuild": "^0.19.9",
     "esbuild-server": "^0.3.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@tweenjs/tween.js": "^21.0.0",
+    "@pixi/ui": "^0.10.1",
+    "gsap": "^3.12.4",
     "pixi.js": "^7.3.2"
   }
 }

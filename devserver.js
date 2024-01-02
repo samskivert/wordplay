@@ -1,4 +1,4 @@
-const { createServer } = require('esbuild-server')
+import { createServer } from 'esbuild-server'
 
 const server = createServer({
   bundle: true,

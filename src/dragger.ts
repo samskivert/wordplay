@@ -1,6 +1,9 @@
 import { Application, DisplayObject, FederatedPointerEvent, Rectangle } from "pixi.js"
 
-const noopUndrop :() => void = () => {}
+export interface Draggable extends DisplayObject {
+
+  onUndrop () :void
+}
 
 export interface DropTarget extends DisplayObject {
 
@@ -8,8 +11,7 @@ export interface DropTarget extends DisplayObject {
 }
 
 export class Dragger {
-  private dragged :DisplayObject|null = null
-  private onUndrop = noopUndrop
+  private dragged :Draggable|null = null
   private targets :DropTarget[] = []
 
   constructor (app :Application) {
@@ -28,28 +30,25 @@ export class Dragger {
     app.stage.onpointerup = (ev) => {
       const dragged = this.dragged
       if (dragged) {
-        const onUndrop = this.onUndrop
         this.dragged = null
-        this.onUndrop = noopUndrop
         dragged.zIndex = 0
 
         for (const target of this.targets) {
           target.getBounds(true, testBounds)
           if (testBounds.contains(ev.global.x, ev.global.y)) {
-            if (!target.onDrop(dragged, ev)) onUndrop()
+            if (!target.onDrop(dragged, ev)) dragged.onUndrop()
             return
           }
         }
-        onUndrop()
+        dragged.onUndrop()
       }
     }
   }
 
-  addDraggable (obj :DisplayObject, onUndrop: () => void) {
+  addDraggable (obj :Draggable) {
     obj.eventMode = "dynamic"
     obj.onpointerdown = (_) => {
       this.dragged = obj
-      this.onUndrop = onUndrop
       obj.zIndex = 1
     }
   }

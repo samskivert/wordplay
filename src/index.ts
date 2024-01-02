@@ -1,8 +1,11 @@
 import { Application } from "pixi.js"
-import { update } from "@tweenjs/tween.js"
-import { Board, Rack } from "./tile"
+import { FancyButton } from "@pixi/ui"
+import { BoardView, RackView, tileSize } from "./view"
 import { Dragger } from "./dragger"
 import { Bag } from "./bag"
+import { Board } from "./board"
+import { mkButton } from "./ui"
+import { checkWord } from "./dict"
 
 const app = new Application({
   view: document.getElementById("pixi-canvas") as HTMLCanvasElement,
@@ -13,38 +16,59 @@ const app = new Application({
   // height: 768
 })
 
-// run our tweens
-app.ticker.add(() => {
-  update()
-})
-
 const dragger = new Dragger(app)
 
-const board = new Board(app.stage, 7)
+const board = new BoardView(app.stage, new Board(7))
 board.x = 50
 board.y = 50
 app.stage.addChild(board)
 dragger.addDropTarget(board)
 
-board.addTile("Q", 0, 2)
-board.addTile("W", 1, 2)
-board.addTile("E", 2, 2)
-board.addTile("R", 3, 2)
-board.addTile("T", 4, 2)
-board.addTile("Y", 5, 2)
+board.addPendingTile("S", 1, 6)
+board.addPendingTile("T", 2, 6)
+board.addPendingTile("A", 3, 6)
+board.addPendingTile("R", 4, 6)
+board.addPendingTile("T", 5, 6)
+board.commitPenders()
 
 const bag = new Bag()
 
-const rack = new Rack(app.stage, 7)
+const rack = new RackView(app.stage, 7)
 rack.x = board.x
 rack.y = board.y + board.height + 30
 app.stage.addChild(rack)
 dragger.addDropTarget(rack)
 
-function addTile (l :string, i :number) {
-  const tile = rack.addTile(l, i)
-  dragger.addDraggable(tile, () => tile.returnToHost())
+function addTilesToRack (count :number) {
+  for (let ii = 0; ii < count; ii += 1) {
+    dragger.addDraggable(rack.addTile(bag.draw()))
+  }
 }
-for (let ii = 0; ii < rack.size; ii += 1) {
-  addTile(bag.draw(), ii)
+addTilesToRack(rack.size)
+
+function addButton (xx :number, text :string, onClick :() => void) :FancyButton {
+  const button = mkButton(text, 40, 40)
+  button.onPress.connect(onClick)
+  button.x = rack.x + tileSize*xx + tileSize/2
+  button.y = rack.y + button.height + button.height/2 + 20
+  app.stage.addChild(button)
+  return button
 }
+
+function tryCommitPlay () {
+  for (let word of board.board.pendingWords()) {
+    if (!checkWord(word.word)) {
+      console.log(`No goodski ${word.word}`)
+      board.shakePenders()
+      return
+    }
+  }
+  board.commitPenders()
+  addTilesToRack(rack.size-rack.tileCount)
+}
+
+addButton(0, "↧", () => board.returnToRack(rack))
+addButton(2, "↤", () => board.slide(-1, 0))
+addButton(3, "↦", () => board.slide(1, 0))
+const play = addButton(6, "↥", tryCommitPlay)
+board.tilesValid.onValue(valid => play.enabled = valid)
