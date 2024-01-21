@@ -3,7 +3,6 @@ import { FancyButton } from "@pixi/ui"
 import { BoardView, RackView, tileSize } from "./view"
 import { Dragger } from "./dragger"
 import { Bag } from "./bag"
-import { Board } from "./board"
 import { mkButton } from "./ui"
 import { checkWord } from "./dict"
 
@@ -18,7 +17,7 @@ const app = new Application({
 
 const dragger = new Dragger(app)
 
-const board = new BoardView(app.stage, new Board(7))
+const board = new BoardView(app.stage, 7)
 board.x = 50
 board.y = 50
 app.stage.addChild(board)
@@ -65,6 +64,11 @@ function tryCommitPlay () {
   }
   board.commitPenders()
   addTilesToRack(rack.size-rack.tileCount)
+
+  // if we got to the top, slide down three rows, destroying any tiles in the way
+  if (board.board.haveTileIn(board.top)) {
+    board.slide(0, 3, true)
+  }
 }
 
 addButton(0, "↧", () => board.returnToRack(rack))

@@ -11,39 +11,34 @@ const inRange = (min :number, max :number, n :number) => min <= n && max >= n
 const wordContains = (word :Word, x :number, y :number) =>
   inRange(word.minX, word.maxX, x) && inRange(word.minY, word.maxY, y)
 
-const inRect = (size :number, x :number, y :number) => x >= 0 && x < size && y >= 0 && y < size
-
 const toKey = (tileX :number, tileY :number) => `${tileX}:${tileY}`
+const toCoord = (key :string) => key.split(':').map(n => parseInt(n))
 
 const dx = [0, 1, 0, -1]
 const dy = [-1, 0, 1, 0]
 
+const Max = 65536
+
 export class Board {
-  private tiles :(string|null)[][]
+  private tiles = new Map<string, string>()
   private pending = new Set<string>()
 
-  readonly size :number
   get pendingCount () :number { return this.pending.size }
 
-  constructor (size :number) {
-    this.size = size
-    this.tiles = Array.from(new Array(size), _ => new Array(size).fill(null))
-  }
-
-  tileAt (x :number, y :number) :string|null {
-    return inRect(this.size, x, y) ? this.tiles[y][x] : null
+  tileAt (x :number, y :number) :string|undefined {
+    return this.tiles.get(toKey(x, y))
   }
 
   setTile (x :number, y :number, letter :string) {
-    if (!inRect(this.size, x, y)) throw new Error(`Out of bounds set: {letter} @ {x},{y}`)
-    this.tiles[y][x] = letter
-    this.pending.add(toKey(x, y))
+    const key = toKey(x, y)
+    this.tiles.set(key, letter)
+    this.pending.add(key)
   }
 
   clearTile (x :number, y :number) {
-    if (!inRect(this.size, x, y)) throw new Error(`Out of bounds clear: {x},{y}`)
-    this.tiles[y][x] = null
-    this.pending.delete(toKey(x, y))
+    const key = toKey(x, y)
+    this.tiles.delete(key)
+    this.pending.delete(key)
   }
 
   commitPending () {
@@ -51,7 +46,7 @@ export class Board {
   }
 
   pendingValid () :boolean {
-    let minx = this.size+1, maxx = -1, miny = this.size+1, maxy = -1
+    let minx = Max, maxx = -Max, miny = Max, maxy = -Max
     this.onPendingTiles((x, y, _) => {
       minx = Math.min(minx, x)
       maxx = Math.max(maxx, x)
@@ -90,6 +85,13 @@ export class Board {
     return words
   }
 
+  haveTileIn (row :number) :boolean {
+    for (const key of this.tiles.keys()) {
+      if (toCoord(key)[1] == row) return true
+    }
+    return false
+  }
+
   private findPlayedWord (tx :number, ty :number, dx :number, dy :number) :Word|null {
     let x = tx, y = ty
     // scan back to the start of the word
@@ -118,12 +120,10 @@ export class Board {
   // }
 
   private onPendingTiles (op :(x :number, y :number, l :string) => void) {
-    const {tiles, pending, size} = this
-    for (let y = 0; y < size; y += 1) {
-      for (let x = 0; x < size; x += 1) {
-        const l = tiles[y][x]
-        if (l != null && pending.has(toKey(x, y))) op(x, y, l)
-      }
+    const {tiles, pending} = this
+    for (const key of pending) {
+      const coord = toCoord(key), tile = tiles.get(key)!
+      op(coord[0], coord[1], tile)
     }
   }
 }

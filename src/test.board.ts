@@ -1,7 +1,7 @@
 import { Board } from "./board"
 
 test("set and clear tiles", () => {
-  const size = 7, board = new Board(size)
+  const size = 7, board = new Board()
   const letters = ["a", "b", "c", "d", "e", "f"]
   for (let yy = 0; yy < size; yy += 1) {
   for (let xx = 0; xx < size; xx += 1) {
@@ -9,13 +9,13 @@ test("set and clear tiles", () => {
       board.setTile(xx, yy, l)
       expect(board.tileAt(xx, yy)).toBe(l)
       board.clearTile(xx, yy)
-      expect(board.tileAt(xx, yy)).toBe(null)
+      expect(board.tileAt(xx, yy)).toBe(undefined)
     }
   }
 })
 
 test("find words", () => {
-  const size = 7, board = new Board(size)
+  const board = new Board()
 
   board.setTile(1, 3, "S")
   board.setTile(2, 3, "T")
@@ -51,13 +51,13 @@ test("find words", () => {
       expect(word.minY).toBe(2)
       expect(word.maxY).toBe(3)
     } else {
-      fail(`Invalid word: {word.word}`)
+      throw new Error(`Invalid word: ${word.word}`)
     }
   }
 })
 
 test("pending valid", () => {
-  const size = 7, board = new Board(size)
+  const board = new Board()
 
   board.setTile(1, 3, "S")
   board.setTile(2, 3, "T")

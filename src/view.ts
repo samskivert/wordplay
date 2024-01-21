@@ -121,6 +121,7 @@ export class TileView extends Container implements Draggable {
   }
 
   shrinkAndDestroy () {
+    this.destroy() // TODO
   }
 
   shake (offset :number, duration :number) {
@@ -171,13 +172,16 @@ export class BoardView extends Container implements DropTarget {
   private offsetY = 0
   readonly stage :Container
   readonly tilesValid = Mutable.local(false)
-  readonly board :Board
+  readonly size :number
+  readonly board = new Board()
 
-  constructor (stage :Container, board :Board) {
+  get top () :number { return -this.offsetY }
+  get left () :number { return -this.offsetX }
+
+  constructor (stage :Container, size :number) {
     super()
     this.stage = stage
-    this.board = board
-    const size = board.size
+    this.size = size
     this.hitArea = new Rectangle(0, 0, tileSize*size, tileSize*size)
 
     const gfx = new Graphics()
@@ -247,12 +251,15 @@ export class BoardView extends Container implements DropTarget {
     }
   }
 
-  slide (dx :number, dy :number) :boolean {
-    const size = this.board.size
+  slide (dx :number, dy :number, destroy :boolean = false) :boolean {
+    const size = this.size
     // if this slide would put any tiles out of bounds, reject it
     for (let tile of this.tiles.values()) {
       let nx = tile.tileX + this.offsetX + dx, ny = tile.tileY + this.offsetY + dy
-      if (nx < 0 || ny < 0 || nx >= size || ny >= size) return false
+      if (nx < 0 || ny < 0 || nx >= size || ny >= size) {
+        if (destroy) tile.shrinkAndDestroy()
+        else return false
+      }
     }
     this.offsetX += dx
     this.offsetY += dy
