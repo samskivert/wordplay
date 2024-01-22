@@ -191,6 +191,13 @@ export class BoardView extends Container implements DropTarget {
     this.addChild(gfx)
   }
 
+  addStartWord (word :string, startX :number, y :number) {
+    for (let ii = 0; ii < word.length; ii += 1) {
+      this.addPendingTile(word.charAt(ii), startX + ii, y)
+    }
+    this.commitPenders()
+  }
+
   addPendingTile (text :string, x :number, y :number) :TileView {
     const tile = makeBoardTile(text)
     tile.dropOn(x, y, this, false)
