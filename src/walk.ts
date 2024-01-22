@@ -10,6 +10,7 @@ export class WordWalk extends Container {
   constructor (app :Application) {
     super()
     const dragger = new Dragger(app)
+    this.sortableChildren = true
 
     const board = new BoardView(this, 7, 10)
     this.addChild(board)
