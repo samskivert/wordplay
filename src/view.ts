@@ -172,20 +172,22 @@ export class BoardView extends Container implements DropTarget {
   private offsetY = 0
   readonly stage :Container
   readonly tilesValid = Mutable.local(false)
-  readonly size :number
+  readonly tileWidth :number
+  readonly tileHeight :number
   readonly board = new Board()
 
-  get top () :number { return -this.offsetY }
-  get left () :number { return -this.offsetX }
+  get topRow () :number { return -this.offsetY }
+  get leftCol () :number { return -this.offsetX }
 
-  constructor (stage :Container, size :number) {
+  constructor (stage :Container, width :number, height :number) {
     super()
     this.stage = stage
-    this.size = size
-    this.hitArea = new Rectangle(0, 0, tileSize*size, tileSize*size)
+    this.tileWidth = width
+    this.tileHeight = height
+    this.hitArea = new Rectangle(0, 0, tileSize*width, tileSize*height)
 
     const gfx = new Graphics()
-    drawWells(gfx, size, size)
+    drawWells(gfx, width, height)
     this.addChild(gfx)
   }
 
@@ -252,11 +254,11 @@ export class BoardView extends Container implements DropTarget {
   }
 
   slide (dx :number, dy :number, destroy :boolean = false) :boolean {
-    const size = this.size
+    const {tileWidth, tileHeight} = this
     // if this slide would put any tiles out of bounds, reject it
     for (let tile of this.tiles.values()) {
       let nx = tile.tileX + this.offsetX + dx, ny = tile.tileY + this.offsetY + dy
-      if (nx < 0 || ny < 0 || nx >= size || ny >= size) {
+      if (nx < 0 || ny < 0 || nx >= tileWidth || ny >= tileHeight) {
         if (destroy) tile.shrinkAndDestroy()
         else return false
       }
@@ -269,6 +271,15 @@ export class BoardView extends Container implements DropTarget {
     }
     return true
   }
+}
+
+// shuffle elements but disallow element to remain in same place
+function sattoloShuffle<N> (array :Array<N>) :Array<N> {
+  for (let ii = array.length - 1; ii > 0; ii--) {
+    const j = Math.floor(Math.random() * ii);
+    [array[ii], array[j]] = [array[j], array[ii]]
+  }
+  return array
 }
 
 export class RackView extends Container implements DropTarget {
@@ -330,5 +341,15 @@ export class RackView extends Container implements DropTarget {
     let unused :number[] = []
     for (let ii = 0; ii < this.size; ii += 1) if (!this.tileAt(ii, 0)) unused.push(ii)
     return unused
+  }
+
+  shuffle () {
+    const indices = sattoloShuffle(Array.from(Array(this.size).keys()))
+    for (let ii = 0; ii < this.size; ii += 1) {
+      const tile = this.tileAt(ii, 0)
+      if (tile) {
+        tile.dropOn(indices[ii], 0, this, true)
+      }
+    }
   }
 }

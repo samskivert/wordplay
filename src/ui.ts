@@ -8,8 +8,9 @@ function buttonFace (width :number, height :number, fill :ColorSource, outline :
     lineStyle(2, outline).drawRoundedRect(0, 0, width, height, corner)
 }
 
+export const buttonSize = 40
 
-export function mkButton (text :string, width :number, height :number) :FancyButton {
+export function mkButton (text :string, width :number, height :number = buttonSize) :FancyButton {
   const button = new FancyButton({
     defaultView: buttonFace(width, height, 0xCCCCCC, 0x333333),
     hoverView: buttonFace(width, height, 0xFFFFFF, 0x666666),
