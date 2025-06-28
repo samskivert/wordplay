@@ -219,65 +219,30 @@ function drawWells(gfx: Graphics, width: number, height: number) {
   }
 }
 
-export class BoardView extends Container implements DropTarget {
-  private tiles = new Map<string, TileView>()
-  private offsetX = 0
-  private offsetY = 0
-  readonly stage: Container
-  readonly tilesValid = Mutable.local(false)
-  readonly tileWidth: number
-  readonly tileHeight: number
-  readonly board = new Board()
-
-  // Drag chain tracking
+export class DragChain {
   private isDragging = false
   private dragChain: Array<{ x: number; y: number }> = []
   private highlightedTiles = new Set<string>()
+  private boardView: BoardView
 
-  get topRow(): number {
-    return -this.offsetY
-  }
-  get leftCol(): number {
-    return -this.offsetX
-  }
-
-  constructor(stage: Container, width: number, height: number) {
-    super()
-    this.stage = stage
-    this.tileWidth = width
-    this.tileHeight = height
-    this.hitArea = new Rectangle(0, 0, tileSize * width, tileSize * height)
-
-    const gfx = new Graphics()
-    drawWells(gfx, width, height)
-    this.addChild(gfx)
-
-    // Enable pointer events
-    this.eventMode = "static"
-    this.on("pointerdown", this.onPointerDown.bind(this))
-    this.on("pointermove", this.onPointerMove.bind(this))
-    this.on("pointerup", this.onPointerUp.bind(this))
-    this.on("pointerupoutside", this.onPointerUp.bind(this))
+  constructor(boardView: BoardView) {
+    this.boardView = boardView
+    this.setupEventHandlers()
   }
 
-  private getTileCoordinatesFromEvent(ev: FederatedPointerEvent): { x: number; y: number } | null {
-    const local = this.toLocal(ev.global)
-    const tx = Math.floor(local.x / tileSize) - this.offsetX
-    const ty = Math.floor(local.y / tileSize) - this.offsetY
-
-    // Check bounds
-    if (tx < 0 || ty < 0 || tx >= this.tileWidth || ty >= this.tileHeight) {
-      return null
-    }
-
-    return { x: tx, y: ty }
+  private setupEventHandlers() {
+    this.boardView.eventMode = "static"
+    this.boardView.on("pointerdown", this.onPointerDown.bind(this))
+    this.boardView.on("pointermove", this.onPointerMove.bind(this))
+    this.boardView.on("pointerup", this.onPointerUp.bind(this))
+    this.boardView.on("pointerupoutside", this.onPointerUp.bind(this))
   }
 
   private onPointerDown(ev: FederatedPointerEvent) {
-    const coords = this.getTileCoordinatesFromEvent(ev)
+    const coords = this.boardView.getTileCoordinatesFromEvent(ev)
     if (!coords) return
 
-    const tile = this.tileAt(coords.x, coords.y)
+    const tile = this.boardView.tileAt(coords.x, coords.y)
     if (!tile) return
 
     this.isDragging = true
@@ -288,10 +253,10 @@ export class BoardView extends Container implements DropTarget {
   private onPointerMove(ev: FederatedPointerEvent) {
     if (!this.isDragging) return
 
-    const coords = this.getTileCoordinatesFromEvent(ev)
+    const coords = this.boardView.getTileCoordinatesFromEvent(ev)
     if (!coords) return
 
-    const tile = this.tileAt(coords.x, coords.y)
+    const tile = this.boardView.tileAt(coords.x, coords.y)
     if (!tile) return
 
     // Check if we're going back to a previous tile in the chain
@@ -310,7 +275,7 @@ export class BoardView extends Container implements DropTarget {
     }
   }
 
-  private onPointerUp(_ev: FederatedPointerEvent) {
+  private onPointerUp() {
     if (!this.isDragging) return
 
     this.isDragging = false
@@ -321,7 +286,7 @@ export class BoardView extends Container implements DropTarget {
   }
 
   private highlightTile(x: number, y: number) {
-    const tile = this.tileAt(x, y)
+    const tile = this.boardView.tileAt(x, y)
     if (tile) {
       tile.setColor(highlightedTileColor)
       this.highlightedTiles.add(tile.key)
@@ -331,7 +296,7 @@ export class BoardView extends Container implements DropTarget {
   private clearAllHighlights() {
     for (const tileKey of this.highlightedTiles) {
       const [x, y] = tileKey.split("+").map(Number)
-      const tile = this.tileAt(x, y)
+      const tile = this.boardView.tileAt(x, y)
       if (tile) {
         tile.setColor(boardTileColor)
       }
@@ -347,6 +312,57 @@ export class BoardView extends Container implements DropTarget {
     for (const coords of this.dragChain) {
       this.highlightTile(coords.x, coords.y)
     }
+  }
+
+  getCurrentChain(): Array<{ x: number; y: number }> {
+    return [...this.dragChain]
+  }
+
+  isActive(): boolean {
+    return this.isDragging
+  }
+}
+
+export class BoardView extends Container implements DropTarget {
+  private tiles = new Map<string, TileView>()
+  private offsetX = 0
+  private offsetY = 0
+  readonly stage: Container
+  readonly tilesValid = Mutable.local(false)
+  readonly tileWidth: number
+  readonly tileHeight: number
+  readonly board = new Board()
+
+  get topRow(): number {
+    return -this.offsetY
+  }
+  get leftCol(): number {
+    return -this.offsetX
+  }
+
+  constructor(stage: Container, width: number, height: number) {
+    super()
+    this.stage = stage
+    this.tileWidth = width
+    this.tileHeight = height
+    this.hitArea = new Rectangle(0, 0, tileSize * width, tileSize * height)
+
+    const gfx = new Graphics()
+    drawWells(gfx, width, height)
+    this.addChild(gfx)
+  }
+
+  getTileCoordinatesFromEvent(ev: FederatedPointerEvent): { x: number; y: number } | null {
+    const local = this.toLocal(ev.global)
+    const tx = Math.floor(local.x / tileSize) - this.offsetX
+    const ty = Math.floor(local.y / tileSize) - this.offsetY
+
+    // Check bounds
+    if (tx < 0 || ty < 0 || tx >= this.tileWidth || ty >= this.tileHeight) {
+      return null
+    }
+
+    return { x: tx, y: ty }
   }
 
   addStartWord(word: string, startX: number, y: number) {
