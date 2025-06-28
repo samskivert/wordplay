@@ -7,11 +7,11 @@ import { mkButton, buttonSize } from "./ui"
 import { checkWord } from "./dict"
 
 export abstract class Game extends Container {
-  readonly dragger :Dragger
-  readonly board :BoardView
-  readonly rack :RackView
+  readonly dragger: Dragger
+  readonly board: BoardView
+  readonly rack: RackView
 
-  constructor (app :Application) {
+  constructor(app: Application) {
     super()
     const dragger = new Dragger(app)
     this.dragger = dragger
@@ -27,28 +27,30 @@ export abstract class Game extends Container {
     this.addChild(rack)
     dragger.addDropTarget(rack)
 
-    const boardRackGap = 30, rackButtonsGap = 20
+    const boardRackGap = 30,
+      rackButtonsGap = 20
     const uiHeight = board.height + boardRackGap + rack.height + rackButtonsGap + buttonSize
-    const screenWidth = app.view.width/2, screenHeight = app.view.height/2
+    const screenWidth = app.view.width / 2,
+      screenHeight = app.view.height / 2
 
-    board.x = (screenWidth - board.width)/2
-    board.y = (screenHeight - uiHeight)/2
+    board.x = (screenWidth - board.width) / 2
+    board.y = (screenHeight - uiHeight) / 2
     rack.x = board.x
     rack.y = board.y + board.height + boardRackGap
 
     const bag = new Bag()
-    function addTilesToRack (count :number) {
+    function addTilesToRack(count: number) {
       for (let ii = 0; ii < count; ii += 1) {
         dragger.addDraggable(rack.addTile(bag.draw()))
       }
     }
     addTilesToRack(rack.size)
 
-    const addButton = (xx :number, text :string, onClick :() => void) => {
+    const addButton = (xx: number, text: string, onClick: () => void) => {
       const button = mkButton(text, buttonSize)
       button.onPress.connect(onClick)
-      button.x = rack.x + tileSize*xx + tileSize/2
-      button.y = rack.y + button.height + button.height/2 + rackButtonsGap
+      button.x = rack.x + tileSize * xx + tileSize / 2
+      button.y = rack.y + button.height + button.height / 2 + rackButtonsGap
       this.addChild(button)
       return button
     }
@@ -68,14 +70,14 @@ export abstract class Game extends Container {
         }
       }
       board.commitPenders()
-      addTilesToRack(rack.size-rack.tileCount)
+      addTilesToRack(rack.size - rack.tileCount)
       this.playDidCommit(words)
     })
-    board.tilesValid.onValue(valid => play.enabled = valid)
+    board.tilesValid.onValue((valid) => (play.enabled = valid))
 
     this.gameWillStart()
   }
 
-  abstract gameWillStart () :void
-  abstract playDidCommit (words :Word[]) :void
+  abstract gameWillStart(): void
+  abstract playDidCommit(words: Word[]): void
 }

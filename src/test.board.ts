@@ -1,11 +1,12 @@
 import { Board } from "./board"
 
 test("set and clear tiles", () => {
-  const size = 7, board = new Board()
+  const size = 7,
+    board = new Board()
   const letters = ["a", "b", "c", "d", "e", "f"]
   for (let yy = 0; yy < size; yy += 1) {
-  for (let xx = 0; xx < size; xx += 1) {
-      const l = letters[(xx+yy)%letters.length]
+    for (let xx = 0; xx < size; xx += 1) {
+      const l = letters[(xx + yy) % letters.length]
       board.setTile(xx, yy, l)
       expect(board.tileAt(xx, yy)).toBe(l)
       board.clearTile(xx, yy)
