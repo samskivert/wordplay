@@ -61,6 +61,9 @@ export class TileView extends Container implements Draggable {
 
   host: BoardView | RackView | null = null
 
+  // Drag hot zone configuration
+  private static readonly dragHotZoneRatio = 0.7
+
   constructor(letter: string, fillColor: ColorSource) {
     super()
     this.letter = letter
@@ -72,6 +75,20 @@ export class TileView extends Container implements Draggable {
     const text = new Text(letter, textStyle)
     text.anchor.set(0.5)
     this.addChild(text)
+  }
+
+  /**
+   * Checks if the given coordinates (in tile's local space) are within the drag hot zone.
+   * The drag hot zone is the inner portion of the tile defined by dragHotZoneRatio.
+   * @param localX X coordinate in tile's local space
+   * @param localY Y coordinate in tile's local space
+   * @returns true if coordinates are in the drag hot zone
+   */
+  isInDragHotZone(localX: number, localY: number): boolean {
+    const hotZoneSize = tileSize * TileView.dragHotZoneRatio
+    const hotZoneHalfSize = hotZoneSize / 2
+
+    return Math.abs(localX) <= hotZoneHalfSize && Math.abs(localY) <= hotZoneHalfSize
   }
 
   makeCommitted() {
@@ -258,6 +275,10 @@ export class DragChain {
 
     const tile = this.boardView.tileAt(coords.x, coords.y)
     if (!tile) return
+
+    // Check if mouse is in the tile's drag hot zone
+    const localPos = tile.toLocal(ev.global)
+    if (!tile.isInDragHotZone(localPos.x, localPos.y)) return
 
     // Check if we're going back to a previous tile in the chain
     const existingIndex = this.dragChain.findIndex(
