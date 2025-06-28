@@ -241,7 +241,7 @@ export abstract class RSet<E> extends Source<ReadonlySet<E>> implements Readonly
   }
 
   /** Returns an iterator over the entries of this set, in insertion order. */
-  [Symbol.iterator](): IterableIterator<E> {
+  [Symbol.iterator](): SetIterator<E> {
     return this.data[Symbol.iterator]()
   }
 
@@ -463,15 +463,15 @@ export abstract class RMap<K, V> extends Source<ReadonlyMap<K, V>> implements Re
   // TODO: map &c
 
   /** Returns an iterator over the keys of this map, in insertion order. */
-  keys(): IterableIterator<K> {
+  keys(): MapIterator<K> {
     return this.data.keys()
   }
   /** Returns an iterator over the values of this map, in insertion order. */
-  values(): IterableIterator<V> {
+  values(): MapIterator<V> {
     return this.data.values()
   }
   /** Returns an iterator over the entries (`[K,V]`) of this map, in insertion order. */
-  entries(): IterableIterator<[K, V]> {
+  entries(): MapIterator<[K, V]> {
     return this.data.entries()
   }
   /** Applies `fn` to each entry in this map, in insertion order. */
@@ -480,7 +480,7 @@ export abstract class RMap<K, V> extends Source<ReadonlyMap<K, V>> implements Re
   }
 
   /** Returns an iterator over the entries (`[K,V]`) of this map, in insertion order. */
-  [Symbol.iterator](): IterableIterator<[K, V]> {
+  [Symbol.iterator](): MapIterator<[K, V]> {
     return this.data[Symbol.iterator]()
   }
 
