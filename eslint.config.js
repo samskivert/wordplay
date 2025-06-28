@@ -2,9 +2,12 @@ import js from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
+import prettierPlugin from 'eslint-plugin-prettier';
+import prettierConfig from 'eslint-config-prettier';
 
 export default [
   js.configs.recommended,
+  prettierConfig,
   {
     files: ['src/**/*.ts'],
     languageOptions: {
@@ -23,9 +26,11 @@ export default [
     plugins: {
       '@typescript-eslint': tseslint,
       import: importPlugin,
+      prettier: prettierPlugin,
     },
     rules: {
       ...tseslint.configs.recommended.rules,
+      'prettier/prettier': 'error',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
