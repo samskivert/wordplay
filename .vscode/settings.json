@@ -1,0 +1,9 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["typescript"],
+  "eslint.workingDirectories": ["."],
+  "editor.formatOnSave": true,
+  "typescript.preferences.importModuleSpecifier": "relative"
+}
