@@ -1,3 +1,4 @@
+import { gsap } from "gsap"
 import {
   ColorSource,
   Container,
@@ -8,10 +9,10 @@ import {
   TextStyle,
   Text,
 } from "pixi.js"
-import { gsap } from "gsap"
+import { Board } from "./board"
 import { Mutable } from "./core/react"
 import { Draggable, DropTarget } from "./dragger"
-import { Board } from "./board"
+/* global setTimeout */
 
 export const tileSize = 48
 export const cornerSize = tileSize / 5
@@ -161,7 +162,7 @@ export class TileView extends Container implements Draggable {
    * @return `false` if a non-draggable tile is at that location, `true` otherwise.
    */
   dropWithSwap(tx: number, ty: number, host: BoardView | RackView): boolean {
-    let other = host.tileAt(tx, ty)
+    const other = host.tileAt(tx, ty)
     if (other != undefined && other != this) {
       if (!other.draggable) return false
       other.dropOn(this.tileX, this.tileY, this.host!, true)
@@ -430,16 +431,16 @@ export class BoardView extends Container implements DropTarget {
   // from DropTarget
   onDrop(obj: DisplayObject, ev: FederatedPointerEvent): boolean {
     if (!(obj instanceof TileView)) return false
-    let local = this.toLocal(ev.global)
-    let tx = Math.floor(local.x / tileSize) - this.offsetX
-    let ty = Math.floor(local.y / tileSize) - this.offsetY
+    const local = this.toLocal(ev.global)
+    const tx = Math.floor(local.x / tileSize) - this.offsetX
+    const ty = Math.floor(local.y / tileSize) - this.offsetY
     return obj.dropWithSwap(tx, ty, this)
   }
 
   returnToRack(rack: RackView) {
     const slots = rack.unusedSlots()
     let nn = 0
-    for (let tile of this.tiles.values()) {
+    for (const tile of this.tiles.values()) {
       if (!tile.draggable) continue
       tile.dropOn(slots[nn], 0, rack, true)
       nn += 1
@@ -447,14 +448,14 @@ export class BoardView extends Container implements DropTarget {
   }
 
   shakePenders(duration: number = 0.75) {
-    for (let tile of this.tiles.values()) {
+    for (const tile of this.tiles.values()) {
       if (tile.draggable) tile.shake(3, duration)
     }
   }
 
   commitPenders() {
     this.board.commitPending()
-    for (let tile of this.tiles.values()) {
+    for (const tile of this.tiles.values()) {
       if (tile.draggable) tile.makeCommitted()
     }
   }
@@ -462,8 +463,8 @@ export class BoardView extends Container implements DropTarget {
   slide(dx: number, dy: number, destroy: boolean = false): boolean {
     const { tileWidth, tileHeight } = this
     // if this slide would put any tiles out of bounds, reject it
-    for (let tile of this.tiles.values()) {
-      let nx = tile.tileX + this.offsetX + dx,
+    for (const tile of this.tiles.values()) {
+      const nx = tile.tileX + this.offsetX + dx,
         ny = tile.tileY + this.offsetY + dy
       if (nx < 0 || ny < 0 || nx >= tileWidth || ny >= tileHeight) {
         if (destroy) tile.shrinkAndDestroy()
@@ -473,7 +474,7 @@ export class BoardView extends Container implements DropTarget {
     this.offsetX += dx
     this.offsetY += dy
     // move the tiles to their same position, which will pick up the new offset
-    for (let tile of this.tiles.values()) {
+    for (const tile of this.tiles.values()) {
       tile.moveTo(tile.tileX, tile.tileY, this, true)
     }
     return true
@@ -542,15 +543,15 @@ export class RackView extends Container implements DropTarget {
   // from DropTarget
   onDrop(obj: DisplayObject, ev: FederatedPointerEvent): boolean {
     if (obj instanceof TileView) {
-      let local = this.toLocal(ev.global)
-      let tx = Math.floor(local.x / tileSize)
+      const local = this.toLocal(ev.global)
+      const tx = Math.floor(local.x / tileSize)
       return obj.dropWithSwap(tx, 0, this)
     }
     return false
   }
 
   unusedSlots(): number[] {
-    let unused: number[] = []
+    const unused: number[] = []
     for (let ii = 0; ii < this.size; ii += 1) if (!this.tileAt(ii, 0)) unused.push(ii)
     return unused
   }

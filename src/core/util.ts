@@ -10,7 +10,7 @@ export const NoopRemover: Remover = Noop
 
 /** Removes `listener` from `listeners`. */
 export function removeListener<T>(listeners: T[], listener: T) {
-  let ii = listeners.indexOf(listener)
+  const ii = listeners.indexOf(listener)
   if (ii >= 0) listeners.splice(ii, 1)
 }
 
@@ -98,7 +98,7 @@ export class UnreachableCaseError extends Error {
  * default: return unreachableCase(someEnum, "Untranslated")
  * }</pre>
  */
-export let unreachableCase = <T>(_: never, value: T): T => value
+export const unreachableCase = <T>(_: never, value: T): T => value
 
 /** Maintains a set of positive integers using bits in a backing (typed array) vector. */
 export class BitSet {
