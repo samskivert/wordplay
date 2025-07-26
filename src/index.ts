@@ -1,9 +1,10 @@
 import { Application, Container } from "pixi.js"
-import { WordClimb } from "./climb"
+import { WordCrawl } from "./crawl"
 import { mkButton, buttonSize } from "./ui"
 import { WordWalk } from "./walk"
 
 const app = new Application({
+  // eslint-disable-next-line no-undef
   view: document.getElementById("pixi-canvas") as HTMLCanvasElement,
   resolution: window.devicePixelRatio || 1,
   autoDensity: true,
@@ -14,7 +15,7 @@ const app = new Application({
 
 const games = [
   { title: "Word Walk", maker: () => new WordWalk(app) },
-  { title: "Word Climb", maker: () => new WordClimb(app) },
+  { title: "Word Crawl", maker: () => new WordCrawl(app) },
 ]
 
 class MenuView extends Container {
