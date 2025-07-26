@@ -77,14 +77,14 @@ export class Board {
   }
 
   pendingWords(): Word[] {
-    let words: Word[] = []
+    const words: Word[] = []
     this.onPendingTiles((x, y, _) => {
       if (!words.find((w) => w.maxX > w.minX && wordContains(w, x, y))) {
-        let hword = this.findPlayedWord(x, y, 1, 0)
+        const hword = this.findPlayedWord(x, y, 1, 0)
         if (hword) words.push(hword)
       }
       if (!words.find((w) => w.maxY > w.minY && wordContains(w, x, y))) {
-        let vword = this.findPlayedWord(x, y, 0, 1)
+        const vword = this.findPlayedWord(x, y, 0, 1)
         if (vword) words.push(vword)
       }
     })

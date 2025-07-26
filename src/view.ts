@@ -354,9 +354,9 @@ export class BoardView extends Container implements DropTarget {
     }
   }
 
-  shakePenders(duration: number = 0.75) {
+  shakePenders(duration: number = 0.35) {
     for (const tile of this.tiles.values()) {
-      if (tile.draggable) tile.shake(3, duration)
+      if (tile.draggable) tile.shake(1, duration)
     }
   }
 

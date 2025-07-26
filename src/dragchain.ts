@@ -7,9 +7,7 @@ export class DragChain {
   private highlightedTiles = new Set<TileView>()
   private boardView: BoardView
 
-  onDragComplete: (chain: Array<{ x: number; y: number }>) => void = (chain) => {
-    console.log("Drag chain:", chain)
-  }
+  onDragComplete: (chain: Array<{ x: number; y: number }>) => void = () => {}
 
   constructor(boardView: BoardView) {
     this.boardView = boardView

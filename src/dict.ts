@@ -5,8 +5,8 @@ const digits = new Set(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
 
 export function checkWord(word: string): boolean {
   if (words.size == 0) {
-    var word = ""
-    var ii = 0
+    let word = ""
+    let ii = 0
     while (ii < encodedWords.length) {
       const reuse = word.substring(0, parseInt(encodedWords[ii++]))
       const start = ii
