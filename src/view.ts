@@ -116,6 +116,12 @@ export class TileView extends Container implements Draggable {
       tileSize - 2,
       cornerSize
     )
+
+    // Draw the drag hot zone as a blue rectangle overlay
+    // const hotZoneSize = tileSize * TileView.dragHotZoneRatio
+    // const hotZoneHalfSize = hotZoneSize / 2
+    // gfx.lineStyle(2, 0x0000ff, 1)
+    // gfx.drawRect(-hotZoneHalfSize, -hotZoneHalfSize, hotZoneSize, hotZoneSize)
   }
 
   get draggable() {
@@ -217,16 +223,17 @@ export class TileView extends Container implements Draggable {
   }
 }
 
-function drawWells(gfx: Graphics, width: number, height: number) {
+function drawWells(gfx: Graphics, width: number, height: number, hexOffset: boolean) {
   const inset = 3
   const cellSize = tileSize - 2 * inset
   gfx.lineStyle(2, wellOutlineColor)
   for (let yy = 0; yy < height; yy += 1) {
     for (let xx = 0; xx < width; xx += 1) {
+      const dy = !hexOffset || xx % 2 == 0 ? 0 : tileSize / 2
       gfx.beginFill(wellColor)
       gfx.drawRoundedRect(
         tileSize * xx + inset,
-        tileSize * yy + inset,
+        tileSize * yy + inset + dy,
         cellSize,
         cellSize,
         cornerSize
@@ -245,6 +252,7 @@ export class BoardView extends Container implements DropTarget {
   readonly tileWidth: number
   readonly tileHeight: number
   readonly board = new Board()
+  readonly hexOffset: boolean
 
   get topRow(): number {
     return -this.offsetY
@@ -253,22 +261,24 @@ export class BoardView extends Container implements DropTarget {
     return -this.offsetX
   }
 
-  constructor(stage: Container, width: number, height: number) {
+  constructor(stage: Container, width: number, height: number, hexOffset = false) {
     super()
     this.stage = stage
     this.tileWidth = width
     this.tileHeight = height
     this.hitArea = new Rectangle(0, 0, tileSize * width, tileSize * height)
+    this.hexOffset = hexOffset
 
     const gfx = new Graphics()
-    drawWells(gfx, width, height)
+    drawWells(gfx, width, height, this.hexOffset)
     this.addChild(gfx)
   }
 
   getTileCoordinatesFromEvent(ev: FederatedPointerEvent): { x: number; y: number } | null {
     const local = this.toLocal(ev.global)
     const tx = Math.floor(local.x / tileSize) - this.offsetX
-    const ty = Math.floor(local.y / tileSize) - this.offsetY
+    const dy = !this.hexOffset || tx % 2 == 0 ? 0 : tileSize / 2
+    const ty = Math.floor((local.y - dy) / tileSize) - this.offsetY
 
     // Check bounds
     if (tx < 0 || ty < 0 || tx >= this.tileWidth || ty >= this.tileHeight) {
@@ -297,11 +307,12 @@ export class BoardView extends Container implements DropTarget {
   }
 
   tilePos(tileX: number, tileY: number): { x: number; y: number } {
-    const vx = tileX + this.offsetX,
-      vy = tileY + this.offsetY
+    const vx = tileX + this.offsetX
+    const vy = tileY + this.offsetY
+    const dy = !this.hexOffset || tileX % 2 == 0 ? 0 : tileSize / 2
     return {
       x: this.x + vx * tileSize + tileSize / 2,
-      y: this.y + vy * tileSize + tileSize / 2,
+      y: this.y + vy * tileSize + tileSize / 2 + dy,
     }
   }
 
@@ -392,7 +403,7 @@ export class RackView extends Container implements DropTarget {
     this.size = size
 
     const gfx = new Graphics()
-    drawWells(gfx, this.size, 1)
+    drawWells(gfx, this.size, 1, false)
     this.addChild(gfx)
   }
 
