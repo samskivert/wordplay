@@ -31,7 +31,18 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       "prettier/prettier": "error",
-      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "args": "all",
+          "argsIgnorePattern": "^_",
+          "caughtErrors": "all",
+          "caughtErrorsIgnorePattern": "^_",
+          "destructuredArrayIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "ignoreRestSiblings": true
+        },
+      ],
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",

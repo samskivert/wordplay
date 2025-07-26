@@ -1,7 +1,7 @@
 import { Application, Container } from "pixi.js"
+import { WordClimb } from "./climb"
 import { mkButton, buttonSize } from "./ui"
 import { WordWalk } from "./walk"
-import { WordClimb } from "./climb"
 
 const app = new Application({
   view: document.getElementById("pixi-canvas") as HTMLCanvasElement,
@@ -26,8 +26,8 @@ class MenuView extends Container {
     const menuHeight = games.length * buttonSize + (games.length - 1) * buttonGap
     const screenWidth = app.view.width / 2,
       screenHeight = app.view.height / 2
-    var yy = (screenHeight - menuHeight) / 2 + buttonSize / 2
-    for (var { title, maker } of games) {
+    let yy = (screenHeight - menuHeight) / 2 + buttonSize / 2
+    for (const { title, maker } of games) {
       const button = mkButton(title, buttonWidth, buttonSize)
       button.onPress.connect(() => {
         this.destroy()
