@@ -386,6 +386,35 @@ export class BoardView extends Container implements DropTarget {
     }
     return true
   }
+
+  /**
+   * Checks if (x2, y2) is a neighbor of (x1, y1), considering hexOffset mode.
+   * In normal mode: up/down/left/right. In hexOffset: also allow the offset neighbor.
+   */
+  isNeighbor(x1: number, y1: number, x2: number, y2: number): boolean {
+    if (x1 === x2 && y1 === y2) return false
+    if (!this.hexOffset) {
+      // Normal 4-way adjacency
+      return (x1 === x2 && Math.abs(y1 - y2) === 1) || (y1 === y2 && Math.abs(x1 - x2) === 1)
+    } else {
+      // Hex offset: normal neighbors plus offset diagonal
+      const dx = x2 - x1
+      const dy = y2 - y1
+      if ((dx === 0 && Math.abs(dy) === 1) || (dy === 0 && Math.abs(dx) === 1)) {
+        return true
+      }
+      if (dx === 1 || dx === -1) {
+        if (x1 % 2 === 0) {
+          // Even column: allow (x±1, y-1)
+          if (dy === -1) return true
+        } else {
+          // Odd column: allow (x±1, y+1)
+          if (dy === 1) return true
+        }
+      }
+      return false
+    }
+  }
 }
 
 // shuffle elements but disallow element to remain in same place

@@ -57,9 +57,12 @@ export class DragChain {
       this.dragChain = this.dragChain.slice(0, existingIndex + 1)
       this.updateHighlightedTiles()
     } else {
-      // Add new tile to chain
-      this.dragChain.push(coords)
-      this.highlightTile(coords.x, coords.y)
+      // Only add if neighbor of last tile in chain
+      const last = this.dragChain[this.dragChain.length - 1]
+      if (this.boardView.isNeighbor(last.x, last.y, coords.x, coords.y)) {
+        this.dragChain.push(coords)
+        this.highlightTile(coords.x, coords.y)
+      }
     }
   }
 
