@@ -10,13 +10,6 @@ import {
   Text,
 } from "pixi.js"
 import { Board } from "./board"
-import {
-  boardTileColor,
-  rackTileColor,
-  tileOutlineColor,
-  wellColor,
-  wellOutlineColor,
-} from "./colors"
 import { Mutable } from "./core/react"
 import { Draggable, DropTarget } from "./dragger"
 /* global setTimeout */
@@ -29,6 +22,14 @@ const textStyle = new TextStyle({
   fill: "#023047",
   fontSize: (3 * tileSize) / 4,
 })
+
+const wellColor = 0x429ebd
+const wellOutlineColor = 0x9fe7f5
+
+const boardTileColor = 0xf7ad19
+const rackTileColor = 0xf27f0c
+const tileOutlineColor = 0x053f5c
+const highlightedTileColor = 0xffd700 // Gold color for highlighted tiles
 
 const tileVel = 800
 const minTweenTime = 0.1
@@ -122,6 +123,10 @@ export class TileView extends Container implements Draggable {
     // const hotZoneHalfSize = hotZoneSize / 2
     // gfx.lineStyle(2, 0x0000ff, 1)
     // gfx.drawRect(-hotZoneHalfSize, -hotZoneHalfSize, hotZoneSize, hotZoneSize)
+  }
+
+  setHighlighted(highlighted: boolean) {
+    this.setColor(highlighted ? highlightedTileColor : boardTileColor)
   }
 
   get draggable() {

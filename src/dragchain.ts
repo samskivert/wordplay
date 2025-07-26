@@ -1,12 +1,15 @@
 import { FederatedPointerEvent } from "pixi.js"
-import { boardTileColor, highlightedTileColor } from "./colors"
-import { BoardView } from "./view"
+import { BoardView, TileView } from "./view"
 
 export class DragChain {
   private isDragging = false
   private dragChain: Array<{ x: number; y: number }> = []
-  private highlightedTiles = new Set<string>()
+  private highlightedTiles = new Set<TileView>()
   private boardView: BoardView
+
+  onDragComplete: (chain: Array<{ x: number; y: number }>) => void = (chain) => {
+    console.log("Drag chain:", chain)
+  }
 
   constructor(boardView: BoardView) {
     this.boardView = boardView
@@ -66,27 +69,23 @@ export class DragChain {
     if (!this.isDragging) return
 
     this.isDragging = false
-    console.log("Drag chain:", this.dragChain)
-
-    // Clear all highlights
     this.clearAllHighlights()
+    const chain = [...this.dragChain]
+    this.dragChain = []
+    this.onDragComplete(chain)
   }
 
   private highlightTile(x: number, y: number) {
     const tile = this.boardView.tileAt(x, y)
     if (tile) {
-      tile.setColor(highlightedTileColor)
-      this.highlightedTiles.add(tile.key)
+      tile.setHighlighted(true)
+      this.highlightedTiles.add(tile)
     }
   }
 
   private clearAllHighlights() {
-    for (const tileKey of this.highlightedTiles) {
-      const [x, y] = tileKey.split("+").map(Number)
-      const tile = this.boardView.tileAt(x, y)
-      if (tile) {
-        tile.setColor(boardTileColor)
-      }
+    for (const tile of this.highlightedTiles) {
+      tile.setHighlighted(false)
     }
     this.highlightedTiles.clear()
   }
