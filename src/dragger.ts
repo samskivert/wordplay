@@ -1,4 +1,4 @@
-import { Application, DisplayObject, FederatedPointerEvent, Rectangle } from "pixi.js"
+import { DisplayObject, FederatedPointerEvent, Rectangle, Container } from "pixi.js"
 
 export interface Draggable extends DisplayObject {
   onUndrop(): void
@@ -12,20 +12,19 @@ export class Dragger {
   private dragged: Draggable | null = null
   private targets: DropTarget[] = []
 
-  constructor(app: Application) {
-    app.stage.eventMode = "static"
-    app.stage.hitArea = app.screen
-    app.stage.sortableChildren = true
+  constructor(container: Container) {
+    container.eventMode = "static"
+    container.sortableChildren = true
 
-    app.stage.onpointermove = (ev) => {
+    container.on("pointermove", (ev: FederatedPointerEvent) => {
       const dragged = this.dragged
       if (dragged) {
         dragged.parent.toLocal(ev.global, undefined, dragged.position)
       }
-    }
+    })
 
     const testBounds = new Rectangle()
-    app.stage.onpointerup = (ev) => {
+    container.on("pointerup", (ev: FederatedPointerEvent) => {
       const dragged = this.dragged
       if (dragged) {
         this.dragged = null
@@ -40,12 +39,12 @@ export class Dragger {
         }
         dragged.onUndrop()
       }
-    }
+    })
   }
 
   addDraggable(obj: Draggable) {
     obj.eventMode = "dynamic"
-    obj.onpointerdown = (_) => {
+    obj.onpointerdown = () => {
       this.dragged = obj
       obj.zIndex = 1
     }

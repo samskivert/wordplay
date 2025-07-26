@@ -1,10 +1,10 @@
 import { Application, Container } from "pixi.js"
-import { BoardView, RackView, tileSize } from "./view"
-import { Dragger } from "./dragger"
 import { Bag } from "./bag"
 import { Word } from "./board"
-import { mkButton, buttonSize } from "./ui"
 import { checkWord } from "./dict"
+import { Dragger } from "./dragger"
+import { mkButton, buttonSize } from "./ui"
+import { BoardView, RackView, tileSize } from "./view"
 
 export abstract class Game extends Container {
   readonly dragger: Dragger
@@ -13,7 +13,8 @@ export abstract class Game extends Container {
 
   constructor(app: Application) {
     super()
-    const dragger = new Dragger(app)
+    this.hitArea = app.screen
+    const dragger = new Dragger(this)
     this.dragger = dragger
     this.sortableChildren = true
 
@@ -62,7 +63,7 @@ export abstract class Game extends Container {
 
     const play = addButton(6, "↥", () => {
       const words = board.board.pendingWords()
-      for (let word of words) {
+      for (const word of words) {
         if (!checkWord(word.word)) {
           console.log(`No goodski ${word.word}`)
           board.shakePenders()
