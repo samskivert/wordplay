@@ -7,7 +7,9 @@ export class DragChain {
   private highlightedTiles = new Set<TileView>()
   private boardView: BoardView
 
+  enabled = true
   onDragComplete: (chain: Array<{ x: number; y: number }>) => void = () => {}
+  onChainUpdate: (chain: Array<{ x: number; y: number }>) => void = () => {}
 
   constructor(boardView: BoardView) {
     this.boardView = boardView
@@ -23,6 +25,8 @@ export class DragChain {
   }
 
   private onPointerDown(ev: FederatedPointerEvent) {
+    if (!this.enabled) return
+
     const coords = this.boardView.getTileCoordinatesFromEvent(ev)
     if (!coords) return
 
@@ -32,6 +36,7 @@ export class DragChain {
     this.isDragging = true
     this.dragChain = [coords]
     this.highlightTile(coords.x, coords.y)
+    this.onChainUpdate([...this.dragChain])
   }
 
   private onPointerMove(ev: FederatedPointerEvent) {
@@ -56,12 +61,14 @@ export class DragChain {
       // Truncate the chain back to this tile
       this.dragChain = this.dragChain.slice(0, existingIndex + 1)
       this.updateHighlightedTiles()
+      this.onChainUpdate([...this.dragChain])
     } else {
       // Only add if neighbor of last tile in chain
       const last = this.dragChain[this.dragChain.length - 1]
       if (this.boardView.isNeighbor(last.x, last.y, coords.x, coords.y)) {
         this.dragChain.push(coords)
         this.highlightTile(coords.x, coords.y)
+        this.onChainUpdate([...this.dragChain])
       }
     }
   }
@@ -73,6 +80,7 @@ export class DragChain {
     this.clearAllHighlights()
     const chain = [...this.dragChain]
     this.dragChain = []
+    this.onChainUpdate([])
     this.onDragComplete(chain)
   }
 
