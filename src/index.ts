@@ -1,5 +1,6 @@
 import { Application, Container } from "pixi.js"
 import { WordCrawl } from "./crawl"
+import { WordFlip } from "./flip"
 import { mkButton, buttonSize } from "./ui"
 import { WordWalk } from "./walk"
 
@@ -16,6 +17,7 @@ const app = new Application({
 const games = [
   { title: "Word Walk", maker: () => new WordWalk(app) },
   { title: "Word Crawl", maker: () => new WordCrawl(app) },
+  { title: "Word Flip", maker: () => new WordFlip(app) },
 ]
 
 class MenuView extends Container {
