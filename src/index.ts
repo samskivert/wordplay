@@ -3,6 +3,7 @@ import { WordCrawl } from "./crawl"
 import { WordFlip } from "./flip"
 import { mkButton, buttonSize } from "./ui"
 import { WordWalk } from "./walk"
+import { WildDrag } from "./wild"
 
 const app = new Application({
   // eslint-disable-next-line no-undef
@@ -18,6 +19,7 @@ const games = [
   { title: "Word Walk", maker: () => new WordWalk(app) },
   { title: "Word Crawl", maker: () => new WordCrawl(app) },
   { title: "Word Flip", maker: () => new WordFlip(app) },
+  { title: "Wild Drag", maker: () => new WildDrag(app) },
 ]
 
 class MenuView extends Container {
