@@ -8,7 +8,7 @@ import { BoardView, tileSize } from "./view"
 const startColor = 0xccff99
 const flippedColor = 0x99cc66
 
-export class WordFlip extends Container {
+export class Idea3 extends Container {
   readonly board: BoardView
   private app: Application
   private coords = new Set<string>()

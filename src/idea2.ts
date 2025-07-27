@@ -4,7 +4,7 @@ import { checkWord } from "./dict"
 import { DragChain } from "./dragchain"
 import { BoardView } from "./view"
 
-export class WordCrawl extends Container {
+export class Idea2 extends Container {
   readonly board: BoardView
 
   constructor(_app: Application) {

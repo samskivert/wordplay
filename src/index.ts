@@ -1,9 +1,9 @@
-import { Application, Container } from "pixi.js"
-import { WordCrawl } from "./crawl"
-import { WordFlip } from "./flip"
-import { mkButton, buttonSize } from "./ui"
-import { WordWalk } from "./walk"
-import { WildDrag } from "./wild"
+import { Application, Container, Text } from "pixi.js"
+import { Idea1 } from "./idea1"
+import { Idea2 } from "./idea2"
+import { Idea3 } from "./idea3"
+import { Idea4 } from "./idea4"
+import { mkButton, buttonSize, titleStyle } from "./ui"
 
 const app = new Application({
   // eslint-disable-next-line no-undef
@@ -15,45 +15,70 @@ const app = new Application({
   height: 720,
 })
 
-const games = [
-  { title: "Word Walk", maker: () => new WordWalk(app) },
-  { title: "Word Crawl", maker: () => new WordCrawl(app) },
-  { title: "Word Flip", maker: () => new WordFlip(app) },
-  { title: "Wild Drag", maker: () => new WildDrag(app) },
+type Maker = () => Container
+const games :Maker[] = [
+  () => new Idea1(app),
+  () => new Idea2(app),
+  () => new Idea3(app),
+  () => new Idea4(app),
 ]
 
 class MenuView extends Container {
   constructor() {
     super()
-    // manual layout, so awesome!
-    const buttonWidth = 4 * buttonSize,
-      buttonGap = 20
-    const menuHeight = games.length * buttonSize + (games.length - 1) * buttonGap
-    const screenWidth = app.view.width / 2,
-      screenHeight = app.view.height / 2
-    let yy = (screenHeight - menuHeight) / 2 + buttonSize / 2
-    for (const { title, maker } of games) {
-      const button = mkButton(title, buttonWidth, buttonSize)
-      button.onPress.connect(() => {
-        this.destroy()
-        const game = maker()
-        app.stage.addChild(game)
 
-        const back = mkButton("↤", buttonSize)
-        back.x = buttonSize / 2 + 10
-        back.y = buttonSize / 2 + 10
-        back.onPress.connect(() => {
-          game.destroy()
-          back.destroy()
-          app.stage.addChild(new MenuView())
-        })
-        app.stage.addChild(back)
+    // manual layout, so awesome!
+    const buttonWidth = buttonSize * 1.5
+    const buttonGap = 20
+    const cols = Math.min(games.length, 5)
+    const rows = Math.ceil(games.length / cols)
+    const menuWidth = cols * buttonWidth + (cols - 1) * buttonGap
+    const menuHeight = rows * buttonSize + (rows - 1) * buttonGap
+    const screenWidth = app.view.width / 2
+    const screenHeight = app.view.height / 2
+    const startx = (screenWidth - menuWidth) / 2 + buttonWidth / 2
+
+    let xx = startx, yy = (screenHeight - menuHeight) / 2 + buttonSize / 2, col = 0
+    for (const [idx, maker] of games.entries()) {
+      const label = idx+1 < 10 ? `0${idx+1}` : `${idx+1}`
+      const button = mkButton(label, buttonWidth, buttonSize)
+      button.onPress.connect(() => {
+        this.start(maker)
       })
-      button.x = screenWidth / 2
+      button.x = xx
       button.y = yy
       this.addChild(button)
-      yy += buttonSize + buttonGap
+      xx += buttonWidth + buttonGap
+      col += 1
+      if (col == cols) {
+        yy += buttonSize + buttonGap
+        xx = startx
+        col = 0
+      }
     }
+
+    // Create text element for current word
+    const titleText = new Text("Word Play", titleStyle)
+    titleText.anchor.set(0.5)
+    titleText.x = screenWidth / 2
+    titleText.y = (screenHeight - menuHeight) / 4
+    this.addChild(titleText)
+  }
+
+  start (maker :Maker) {
+    this.destroy()
+    const game = maker()
+    app.stage.addChild(game)
+
+    const back = mkButton("◀︎︎", buttonSize)
+    back.x = buttonSize / 2 + 10
+    back.y = buttonSize / 2 + 10
+    back.onPress.connect(() => {
+      game.destroy()
+      back.destroy()
+      app.stage.addChild(new MenuView())
+    })
+    app.stage.addChild(back)
   }
 }
 

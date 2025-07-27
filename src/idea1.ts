@@ -1,7 +1,7 @@
 import { Word } from "./board"
 import { Game } from "./game"
 
-export class WordWalk extends Game {
+export class Idea1 extends Game {
   gameWillStart(): void {
     this.board.addStartWord("START", 1, this.board.tileHeight - 1)
   }
