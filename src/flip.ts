@@ -3,7 +3,7 @@ import { Text } from "pixi.js"
 import { Bag } from "./bag"
 import { checkWord } from "./dict"
 import { DragChain } from "./dragchain"
-import { BoardView } from "./view"
+import { BoardView, tileSize } from "./view"
 
 const startColor = 0xccff99
 const flippedColor = 0x99cc66
@@ -14,23 +14,23 @@ export class WordFlip extends Container {
   private coords = new Set<string>()
   private currentWordText: Text
 
-  constructor(_app: Application) {
+  constructor(app: Application) {
     super()
-    this.app = _app
+    this.app = app
 
     const board = new BoardView(this, 7, 7, true)
     this.board = board
     this.addChild(board)
 
     // Create text element for current word
-    this.currentWordText = new Text("", {
-      fontSize: 24,
+    const currentWordText = (this.currentWordText = new Text("", {
+      fontSize: 36,
       fill: 0xffffff,
       stroke: 0x000000,
       strokeThickness: 2,
-    })
-    this.currentWordText.anchor.set(0.5)
-    this.addChild(this.currentWordText)
+    }))
+    currentWordText.anchor.set(0.5)
+    this.addChild(currentWordText)
 
     const dc = new DragChain(board)
     dc.onDragComplete = (chain) => {
@@ -68,7 +68,19 @@ export class WordFlip extends Container {
       this.currentWordText.text = word
     }
 
-    this.centerBoard()
+    // Recenter on window resize
+    function recenter() {
+      // Use app.screen.width/height for the available area
+      board.x = (app.screen.width - board.tileWidth * tileSize) / 2
+      board.y = (app.screen.height - board.tileHeight * tileSize) / 2
+
+      // Position the current word text below the board
+      currentWordText.x = app.screen.width / 2
+      currentWordText.y = board.y + board.tileHeight * tileSize + 60
+    }
+    window.addEventListener("resize", recenter)
+    this.on("destroy", () => window.removeEventListener("resize", recenter))
+    recenter()
 
     const bag = new Bag(["Q"]) // no Qs here, too annoying
     const cols = board.tileWidth
@@ -83,22 +95,6 @@ export class WordFlip extends Container {
       }
     }
     board.commitPenders()
-
-    // Recenter on window resize
-    window.addEventListener("resize", () => this.centerBoard())
-  }
-
-  centerBoard() {
-    // Use app.screen.width/height for the available area
-    const board = this.board
-    const app = this.app
-    if (!board || !app) return
-    board.x = (app.screen.width - board.tileWidth * 48) / 2
-    board.y = (app.screen.height - board.tileHeight * 48) / 2
-
-    // Position the current word text below the board
-    this.currentWordText.x = app.screen.width / 2
-    this.currentWordText.y = board.y + board.tileHeight * 48 + 40
   }
 
   showComplete() {
