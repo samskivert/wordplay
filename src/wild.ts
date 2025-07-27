@@ -43,13 +43,14 @@ export class WildDrag extends Container {
     dc.onDragComplete = (chain) => {
       const word = chain.map(({ x, y }) => board.tileAt(x, y)?.letter).join("")
       if (word.length < 2) return // no one letter words
-      if (!checkWord(word)) {
+      const matched: string[] = []
+      if (!checkWord(word, matched)) {
         for (const { x, y } of chain) {
           board.tileAt(x, y)?.shake(1, 0.35)
         }
         return
       }
-      console.log("Played word:", word)
+      console.log("Played word:", matched.join(""))
       // Clear out the played word tiles and replace with new (smaller)tiles
       for (const { x, y } of chain) {
         const tile = board.tileAt(x, y)
