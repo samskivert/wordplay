@@ -5,8 +5,9 @@ and build up a reusable (by me) library of components that I can use to quickly 
 random word game ideas.
 
 Since I hate every programming language and every game development framework, this has hamstrung me
-for a long time. But I finally got over myself and started a [Pixi.js]-based project a while back
-and neglected it, and then recently picked it back up and started adding a few ideas.
+for a long time. But I finally got over myself and started a [Pixi.js]-based project a while back.
+Then I neglected it for a good long time. But I finally picked it back up and started adding a few
+ideas.
 
 We shall see whether it grows over time, but I'm trying to minimize the overhead for adding a new
 game idea, and maximize the learnings. Mmm... delicious learnings.
