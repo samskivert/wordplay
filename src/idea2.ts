@@ -1,14 +1,15 @@
-import { Application, Container } from "pixi.js"
+import { Application } from "pixi.js"
 import { Bag } from "./bag"
 import { checkWord } from "./dict"
 import { DragChain } from "./dragchain"
 import { BoardView } from "./view"
+import { Idea } from "./idea"
 
-export class Idea2 extends Container {
+export class Idea2 extends Idea {
   readonly board: BoardView
 
-  constructor(_app: Application) {
-    super()
+  constructor(app: Application) {
+    super(app)
 
     const board = new BoardView(this, 7, 10, true)
     this.board = board

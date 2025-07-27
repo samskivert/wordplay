@@ -1,7 +1,7 @@
 import { Word } from "./board"
-import { Game } from "./game"
+import { RackIdea } from "./rack"
 
-export class Idea1 extends Game {
+export class Idea1 extends RackIdea {
   gameWillStart(): void {
     this.board.addStartWord("START", 1, this.board.tileHeight - 1)
   }

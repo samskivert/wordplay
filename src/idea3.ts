@@ -1,22 +1,21 @@
-import { Application, Container } from "pixi.js"
-import { Text } from "pixi.js"
+import { Application } from "pixi.js"
 import { Bag } from "./bag"
-import { checkWord } from "./dict"
-import { DragChain } from "./dragchain"
 import { BoardView, tileSize } from "./view"
+import { DragChain } from "./dragchain"
+import { Idea } from "./idea"
+import { Text } from "pixi.js"
+import { checkWord } from "./dict"
 
 const startColor = 0xccff99
 const flippedColor = 0x99cc66
 
-export class Idea3 extends Container {
+export class Idea3 extends Idea {
   readonly board: BoardView
-  private app: Application
   private coords = new Set<string>()
   private currentWordText: Text
 
   constructor(app: Application) {
-    super()
-    this.app = app
+    super(app)
 
     const board = new BoardView(this, 7, 7, true)
     this.board = board

@@ -1,4 +1,5 @@
 import { Application, Container, Text } from "pixi.js"
+import { Idea } from "./idea"
 import { Idea1 } from "./idea1"
 import { Idea2 } from "./idea2"
 import { Idea3 } from "./idea3"
@@ -15,12 +16,12 @@ const app = new Application({
   height: 720,
 })
 
-type Maker = () => Container
+type Maker = (app :Application) => Idea
 const games :Maker[] = [
-  () => new Idea1(app),
-  () => new Idea2(app),
-  () => new Idea3(app),
-  () => new Idea4(app),
+  (app) => new Idea1(app),
+  (app) => new Idea2(app),
+  (app) => new Idea3(app),
+  (app) => new Idea4(app),
 ]
 
 class MenuView extends Container {
@@ -67,18 +68,12 @@ class MenuView extends Container {
 
   start (maker :Maker) {
     this.destroy()
-    const game = maker()
-    app.stage.addChild(game)
-
-    const back = mkButton("◀︎︎", buttonSize)
-    back.x = buttonSize / 2 + 10
-    back.y = buttonSize / 2 + 10
-    back.onPress.connect(() => {
-      game.destroy()
-      back.destroy()
+    const idea = maker(app)
+    idea.addBackButton(() => {
+      idea.destroy()
       app.stage.addChild(new MenuView())
     })
-    app.stage.addChild(back)
+    app.stage.addChild(idea)
   }
 }
 
