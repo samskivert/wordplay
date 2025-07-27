@@ -37,9 +37,13 @@ const tileDist = new Map([
 export class Bag {
   private tiles: string[]
 
-  constructor() {
-    let tiles: string[] = []
-    tileDist.forEach((count, tile) => tiles.push(...Array(count).fill(tile)))
+  constructor(omit: string[] = []) {
+    const tiles: string[] = []
+    tileDist.forEach((count, tile) => {
+      if (!omit.includes(tile)) {
+        tiles.push(...Array(count).fill(tile))
+      }
+    })
     shuffle(tiles)
     this.tiles = tiles
   }
