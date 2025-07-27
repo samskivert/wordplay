@@ -72,6 +72,7 @@ class MenuView extends Container {
       app.stage.addChild(new MenuView())
     })
     app.stage.addChild(idea)
+    idea.startGame()
   }
 }
 

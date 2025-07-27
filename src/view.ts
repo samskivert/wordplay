@@ -12,7 +12,7 @@ import {
 import { Board } from "./board"
 import { Mutable } from "./core/react"
 import { Draggable, DropTarget } from "./dragger"
-import { paper1, paper2, paper3, paper4, paper5, grey1, grey2, grey3, grey4 } from "./ui"
+import { colors } from "./ui"
 /* global setTimeout */
 
 export const tileSize = 48
@@ -26,13 +26,13 @@ const textStyles = [5, 4, 3, 2, 1].map((size) => new TextStyle({
   fontSize: ((size / defaultSize) * (3 * tileSize)) / 4,
 }))
 
-const wellColor = paper1
-const wellOutlineColor = grey4
+const wellColor = colors.paper1
+const wellOutlineColor = colors.grey4
 
-const boardTileColor = paper3
-const rackTileColor = paper5
-const tileOutlineColor = grey2
-const highlightedTileColor = paper4 // Gold color for highlighted tiles
+const boardTileColor = colors.paper3
+const rackTileColor = colors.paper5
+const tileOutlineColor = colors.grey2
+const highlightedTileColor = colors.paper4
 
 const tileVel = 800
 const minTweenTime = 0.1

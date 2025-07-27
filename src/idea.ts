@@ -19,4 +19,6 @@ export abstract class Idea extends Container {
     })
     this.addChild(back)
   }
+
+  startGame () {}
 }

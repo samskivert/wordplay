@@ -1,29 +1,31 @@
 import { ColorSource, Graphics, Text } from "pixi.js"
 import { FancyButton } from "@pixi/ui"
 
-export const paper1 = 0xf6eee3
-export const paper2 = 0xeee7d7
-export const paper3 = 0xe5decf
-export const paper4 = 0xe5cbba
-export const paper5 = 0xd9bda5
+export const colors = {
+  paper1: 0xf6eee3,
+  paper2: 0xeee7d7,
+  paper3: 0xe5decf,
+  paper4: 0xe5cbba,
+  paper5: 0xd9bda5,
 
-export const grey1 = 0x333333
-export const grey2 = 0x666666
-export const grey3 = 0x999999
-export const grey4 = 0xCCCCCC
+  grey1: 0x333333,
+  grey2: 0x666666,
+  grey3: 0x999999,
+  grey4: 0xCCCCCC,
+}
 
 export const titleStyle = {
   fontFamily: "Courier",
   fontSize: 48,
-  fill: paper3,
-  stroke: grey2,
+  fill: colors.paper3,
+  stroke: colors.grey2,
   strokeThickness: 2,
 }
 
 export const buttonTextStyle = {
   fontFamily: "Courier",
   fontSize: 28,
-  fill: grey1,
+  fill: colors.grey1,
 }
 
 function buttonFace(width: number, height: number, fill: ColorSource, outline: ColorSource) {
@@ -40,10 +42,10 @@ export const buttonSize = 40
 
 export function mkButton(text: string, width: number, height: number = buttonSize): FancyButton {
   const button = new FancyButton({
-    defaultView: buttonFace(width, height, paper3, grey2),
-    hoverView: buttonFace(width, height, paper4, grey2),
-    pressedView: buttonFace(width, height, paper2, grey1),
-    disabledView: buttonFace(width, height, paper1, grey3),
+    defaultView: buttonFace(width, height, colors.paper3, colors.grey2),
+    hoverView: buttonFace(width, height, colors.paper4, colors.grey2),
+    pressedView: buttonFace(width, height, colors.paper2, colors.grey1),
+    disabledView: buttonFace(width, height, colors.paper1, colors.grey3),
     text: new Text(text, buttonTextStyle),
     animations: {
       hover: {
