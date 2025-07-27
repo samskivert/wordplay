@@ -17,11 +17,15 @@ import { Draggable, DropTarget } from "./dragger"
 export const tileSize = 48
 export const cornerSize = tileSize / 5
 
-const textStyle = new TextStyle({
-  align: "center",
-  fill: "#023047",
-  fontSize: (3 * tileSize) / 4,
-})
+const defaultSize = 5
+const textStyles = [5, 4, 3, 2, 1].map(
+  (size) =>
+    new TextStyle({
+      align: "center",
+      fill: "#023047",
+      fontSize: ((size / defaultSize) * (3 * tileSize)) / 4,
+    })
+)
 
 const wellColor = 0x429ebd
 const wellOutlineColor = 0x9fe7f5
@@ -41,17 +45,24 @@ function tweenTime(ox: number, oy: number, nx: number, ny: number, vel: number) 
   return Math.max(dist / vel, minTweenTime)
 }
 
-function makeBoardTile(text: string) {
-  return new TileView(text, boardTileColor)
-}
-function makeRackTile(text: string) {
-  return new TileView(text, rackTileColor)
-}
-
 const toKey = (tileX: number, tileY: number) => `${tileX}+${tileY}`
+
+type TileConfig = {
+  fillColor?: ColorSource
+  size?: number
+  borderWidth?: number
+}
 
 export class TileView extends Container implements Draggable {
   private bg: Graphics
+  private text: Text
+  private normalColor: ColorSource
+  private borderWidth: number
+
+  private _size: number
+  get size() {
+    return this._size
+  }
 
   readonly letter: string
   tileX = 0
@@ -62,18 +73,27 @@ export class TileView extends Container implements Draggable {
 
   host: BoardView | RackView | null = null
 
+  get draggable() {
+    return this.onpointerdown != null
+  }
+
   // Drag hot zone configuration
   private static readonly dragHotZoneRatio = 0.7
 
-  constructor(letter: string, fillColor: ColorSource) {
+  constructor(letter: string, config?: TileConfig) {
     super()
     this.letter = letter
+    const fillColor = config?.fillColor ?? boardTileColor
+    this.normalColor = fillColor
+    const size = config?.size ?? defaultSize
+    this._size = size
+    this.borderWidth = config?.borderWidth ?? 2
 
     const gfx = new Graphics()
     this.addChild((this.bg = gfx))
     this.setColor(fillColor)
 
-    const text = new Text(letter, textStyle)
+    const text = (this.text = new Text(letter, textStyles[defaultSize - size]))
     text.anchor.set(0.5)
     this.addChild(text)
   }
@@ -93,8 +113,13 @@ export class TileView extends Container implements Draggable {
   }
 
   makeCommitted() {
-    this.setColor(boardTileColor)
+    this.setColor(this.normalColor)
     this.onpointerdown = null
+  }
+
+  setSize(size: number) {
+    this._size = size
+    this.text.style = textStyles[defaultSize - size]
   }
 
   setColor(fillColor: ColorSource) {
@@ -109,7 +134,7 @@ export class TileView extends Container implements Draggable {
       cornerSize
     )
     gfx.endFill()
-    gfx.lineStyle(2, tileOutlineColor)
+    gfx.lineStyle(this.borderWidth, tileOutlineColor)
     gfx.drawRoundedRect(
       -tileSize / 2 + 1,
       -tileSize / 2 + 1,
@@ -126,11 +151,7 @@ export class TileView extends Container implements Draggable {
   }
 
   setHighlighted(highlighted: boolean) {
-    this.setColor(highlighted ? highlightedTileColor : boardTileColor)
-  }
-
-  get draggable() {
-    return this.onpointerdown != null
+    this.setColor(highlighted ? highlightedTileColor : this.normalColor)
   }
 
   /** Moves (with or without animation) this tile to tx/ty on host. This does not change the
@@ -271,7 +292,12 @@ export class BoardView extends Container implements DropTarget {
     this.stage = stage
     this.tileWidth = width
     this.tileHeight = height
-    this.hitArea = new Rectangle(0, 0, tileSize * width, tileSize * height)
+    this.hitArea = new Rectangle(
+      0,
+      0,
+      tileSize * width,
+      tileSize * height + (hexOffset ? tileSize / 2 : 0)
+    )
     this.hexOffset = hexOffset
 
     const gfx = new Graphics()
@@ -300,8 +326,8 @@ export class BoardView extends Container implements DropTarget {
     this.commitPenders()
   }
 
-  addPendingTile(text: string, x: number, y: number): TileView {
-    const tile = makeBoardTile(text)
+  addPendingTile(text: string, x: number, y: number, config?: TileConfig): TileView {
+    const tile = new TileView(text, config)
     tile.dropOn(x, y, this, false)
     this.stage.addChild(tile)
     return tile
@@ -446,7 +472,7 @@ export class RackView extends Container implements DropTarget {
   }
 
   addTile(text: string): TileView {
-    const tile = makeRackTile(text)
+    const tile = new TileView(text, { fillColor: rackTileColor })
     for (let x = 0; x < this.size; x += 1) {
       if (this.tiles.has(toKey(x, 0))) continue
       tile.dropOn(x, 0, this, false)
