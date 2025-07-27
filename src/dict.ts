@@ -20,15 +20,19 @@ class Trie {
     }
   }
 
-  contains(word: string, pos: number): boolean {
+  contains(word: string, pos: number, accum: string[] | undefined): boolean {
     if (word.length == pos) {
       return this.terminal
     } else if (word.charAt(pos) === "*") {
-      return this.children.find((child) => child && child.contains(word, pos + 1)) !== undefined
+      const idx = this.children.findIndex((child) => child && child.contains(word, pos + 1, accum))
+      if (idx === -1) return false
+      accum?.push(String.fromCharCode(asciiA + idx))
     } else {
       const child = this.children[word.charCodeAt(pos) - asciiA]
-      return child && child.contains(word, pos + 1)
+      if (!child || !child.contains(word, pos + 1, accum)) return false
+      accum?.push(word.charAt(pos))
     }
+    return true
   }
 }
 
@@ -48,7 +52,7 @@ class Trie {
 // }
 
 export const words = new Trie()
-export function checkWord(word: string): boolean {
+export function checkWord(word: string, matched?: string[]): boolean {
   if (words.children.length == 0) {
     let word = ""
     let ii = 0
@@ -59,5 +63,7 @@ export function checkWord(word: string): boolean {
       words.add((word = reuse + encodedWords.substring(start, ii)), 0)
     }
   }
-  return words.contains(word, 0)
+  const result = words.contains(word, 0, matched)
+  matched?.reverse()
+  return result
 }
