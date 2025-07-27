@@ -33,6 +33,7 @@ export class WordFlip extends Container {
     this.addChild(currentWordText)
 
     const dc = new DragChain(board)
+    dc.blobMode = true
     dc.onDragComplete = (chain) => {
       const word = chain.map(({ x, y }) => board.tileAt(x, y)?.letter).join("")
       if (word.length < 2) return // no one letter words

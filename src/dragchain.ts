@@ -11,6 +11,10 @@ export class DragChain {
   onDragComplete: (chain: Array<{ x: number; y: number }>) => void = () => {}
   onChainUpdate: (chain: Array<{ x: number; y: number }>) => void = () => {}
 
+  // when blob mode is enabled, you can drag to any tile that is adjacent to any
+  // other tile that's already in the chain/blob
+  blobMode = false
+
   constructor(boardView: BoardView) {
     this.boardView = boardView
     this.setupEventHandlers()
@@ -58,18 +62,27 @@ export class DragChain {
     )
 
     if (existingIndex !== -1) {
-      // Truncate the chain back to this tile
-      this.dragChain = this.dragChain.slice(0, existingIndex + 1)
-      this.updateHighlightedTiles()
-      this.onChainUpdate([...this.dragChain])
-    } else {
-      // Only add if neighbor of last tile in chain
-      const last = this.dragChain[this.dragChain.length - 1]
-      if (this.boardView.isNeighbor(last.x, last.y, coords.x, coords.y)) {
-        this.dragChain.push(coords)
-        this.highlightTile(coords.x, coords.y)
+      if (!this.blobMode) {
+        // Truncate the chain back to this tile
+        this.dragChain = this.dragChain.slice(0, existingIndex + 1)
+        this.updateHighlightedTiles()
         this.onChainUpdate([...this.dragChain])
       }
+    } else if (this.canDragTo(coords.x, coords.y)) {
+      this.dragChain.push(coords)
+      this.highlightTile(coords.x, coords.y)
+      this.onChainUpdate([...this.dragChain])
+    }
+  }
+
+  private canDragTo(x: number, y: number) {
+    if (this.blobMode) {
+      return (
+        this.dragChain.find((tile) => this.boardView.isNeighbor(tile.x, tile.y, x, y)) !== undefined
+      )
+    } else {
+      const last = this.dragChain[this.dragChain.length - 1]
+      return this.boardView.isNeighbor(last.x, last.y, x, y)
     }
   }
 
