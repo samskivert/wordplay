@@ -33,3 +33,5 @@ If by some shocking chance you have in fact read these words, and played the gam
 for new variations or improvements, please send them along. Email is good
 <a href="mailto:mdb@samskivert.com">mdb@samskivert.com</a> or open a Github issue or send up smoke
 signalss or whatever else you like.
+
+[Pixi.js]: https://pixijs.com/
