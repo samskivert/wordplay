@@ -11,7 +11,7 @@ const app = new Application({
   view: document.getElementById("pixi-canvas") as HTMLCanvasElement,
   resolution: window.devicePixelRatio || 1,
   autoDensity: true,
-  backgroundColor: 0x429ebd,
+  backgroundColor: 0xf6eee3,
   width: 480,
   height: 720,
 })
@@ -43,9 +43,7 @@ class MenuView extends Container {
     for (const [idx, maker] of games.entries()) {
       const label = idx+1 < 10 ? `0${idx+1}` : `${idx+1}`
       const button = mkButton(label, buttonWidth, buttonSize)
-      button.onPress.connect(() => {
-        this.start(maker)
-      })
+      button.onPress.connect(() => this.start(maker))
       button.x = xx
       button.y = yy
       this.addChild(button)

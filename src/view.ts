@@ -12,28 +12,27 @@ import {
 import { Board } from "./board"
 import { Mutable } from "./core/react"
 import { Draggable, DropTarget } from "./dragger"
+import { paper1, paper2, paper3, paper4, paper5, grey1, grey2, grey3, grey4 } from "./ui"
 /* global setTimeout */
 
 export const tileSize = 48
 export const cornerSize = tileSize / 5
 
 const defaultSize = 5
-const textStyles = [5, 4, 3, 2, 1].map(
-  (size) =>
-    new TextStyle({
-      align: "center",
-      fill: "#023047",
-      fontSize: ((size / defaultSize) * (3 * tileSize)) / 4,
-    })
-)
+const textStyles = [5, 4, 3, 2, 1].map((size) => new TextStyle({
+  fontFamily: "Courier",
+  align: "center",
+  fill: "#023047",
+  fontSize: ((size / defaultSize) * (3 * tileSize)) / 4,
+}))
 
-const wellColor = 0x429ebd
-const wellOutlineColor = 0x9fe7f5
+const wellColor = paper1
+const wellOutlineColor = grey4
 
-const boardTileColor = 0xf7ad19
-const rackTileColor = 0xf27f0c
-const tileOutlineColor = 0x053f5c
-const highlightedTileColor = 0xffd700 // Gold color for highlighted tiles
+const boardTileColor = paper3
+const rackTileColor = paper5
+const tileOutlineColor = grey2
+const highlightedTileColor = paper4 // Gold color for highlighted tiles
 
 const tileVel = 800
 const minTweenTime = 0.1
@@ -113,7 +112,7 @@ export class TileView extends Container implements Draggable {
   }
 
   makeCommitted() {
-    this.setColor(this.normalColor)
+    this.setColor(boardTileColor)
     this.onpointerdown = null
   }
 
