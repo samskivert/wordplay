@@ -11,6 +11,12 @@ const cx = Math.floor(cols / 2)
 const isWild = (x: number, y: number) => (x == cx - 1 && y == 1) || (x == cx + 1 && y == 2)
 
 export class Idea4 extends DragIdea {
+  get info() { return [
+    "Click a letter and drag to adjacent letters to spell a word. " +
+      "The * tile acts as a wildcard. " +
+      "Try to use every letter on the board at least once."
+  ]}
+
   private coords = new Set<string>()
   private bag = new Bag()
 

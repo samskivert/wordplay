@@ -2,6 +2,10 @@ import { Word } from "./board"
 import { RackIdea } from "./rack"
 
 export class Idea1 extends RackIdea {
+  get info() { return [
+    "Make your way to the top of the screen by playing words Scrabble style onto the board."
+  ]}
+
   gameWillStart(): void {
     this.board.addStartWord("START", 1, this.board.tileHeight - 1)
   }

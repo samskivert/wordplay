@@ -8,6 +8,13 @@ const startColor = colors.paper3
 const flippedColor = colors.paper1
 
 export class Idea3 extends DragIdea {
+  get info() { return [
+    "Click a letter and drag to adjacent letters to make a word. " +
+      "Try to use every letter on the board at least once.",
+    "You can backtrack and add letters adjacent to previously any used letter, " +
+      "but this means you can't unselect letters once selected."
+  ]}
+
   private coords = new Set<string>()
   private bag = new Bag(["Q"]) // no Qs here, too annoying
 

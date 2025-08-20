@@ -4,6 +4,9 @@ import { DragIdea } from "./drag"
 import { checkWord } from "./dict"
 
 export class Idea2 extends DragIdea {
+  get info() { return [
+    "Click a letter then drag to adjacent letters to spell words. Try to clear the board."
+  ]}
 
   protected createBoard () {
     return new BoardView(this, 6, 9, true)
