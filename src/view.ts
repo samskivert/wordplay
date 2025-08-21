@@ -13,6 +13,7 @@ import { Board } from "./board"
 import { Mutable } from "./core/react"
 import { Draggable, DropTarget } from "./dragger"
 import { colors } from "./ui"
+import { sattoloShuffle } from "./util"
 /* global setTimeout */
 
 export const tileSize = 48
@@ -442,19 +443,13 @@ export class BoardView extends Container implements DropTarget {
   }
 }
 
-// shuffle elements but disallow element to remain in same place
-function sattoloShuffle<N>(array: Array<N>): Array<N> {
-  for (let ii = array.length - 1; ii > 0; ii--) {
-    const j = Math.floor(Math.random() * ii)
-    ;[array[ii], array[j]] = [array[j], array[ii]]
-  }
-  return array
-}
-
 export class RackView extends Container implements DropTarget {
   private tiles = new Map<string, TileView>()
   readonly stage: Container
   readonly size: number
+
+  // a callback if someone wants to hook into when this rack is rearranged
+  onRearranged :(letters :string) => void = () => {}
 
   constructor(stage: Container, size: number) {
     super()
@@ -468,6 +463,14 @@ export class RackView extends Container implements DropTarget {
 
   get tileCount(): number {
     return this.tiles.size
+  }
+
+  get tileLetters() :string {
+    let letters = ""
+    for (let ii = 0; ii < this.tileCount; ii += 1) {
+      letters += this.tileAt(ii, 0)?.letter ?? ""
+    }
+    return letters
   }
 
   addTile(text: string): TileView {
@@ -495,6 +498,7 @@ export class RackView extends Container implements DropTarget {
   hosted(tile: TileView) {
     if (this.tiles.has(tile.key)) throw Error(`Can't add tile (${tile}) to occupied slot`)
     this.tiles.set(tile.key, tile)
+    this.onRearranged(this.tileLetters)
   }
 
   unhosted(tile: TileView) {
