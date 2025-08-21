@@ -1,5 +1,5 @@
 import { Application, Container, Graphics, Text } from "pixi.js"
-import { mkButton, buttonSize, colors, titleStyle, buttonTextStyle } from "./ui"
+import { mkButton, buttonSize, colors, buttonTextStyle } from "./ui"
 
 export abstract class Idea extends Container {
   readonly app: Application
