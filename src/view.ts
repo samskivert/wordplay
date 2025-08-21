@@ -507,12 +507,43 @@ export class RackView extends Container implements DropTarget {
 
   // from DropTarget
   onDrop(obj: DisplayObject, ev: FederatedPointerEvent): boolean {
-    if (obj instanceof TileView) {
-      const local = this.toLocal(ev.global)
-      const tx = Math.floor(local.x / tileSize)
-      return obj.dropWithSwap(tx, 0, this)
+    if (!(obj instanceof TileView)) return false
+    const local = this.toLocal(ev.global)
+    const tx = Math.floor(local.x / tileSize)
+
+    // if we're dropping a tile from the rack onto another rack tile, slide all the tiles over
+    // instead of just swapping the dropped tile with the tile on which it was dropped
+    if (obj.host === this) {
+      const other = this.tileAt(tx, 0)
+      if (other === undefined || other === obj) {
+        obj.dropOn(tx, 0, this, true)
+        return true
+      }
+      if (!other.draggable) return false
+
+      // find the nearest empty space to the left or right of the spot being filled
+      obj.dropOn(tx, 0, this, true)
+      for (let dx = 1; dx < this.size; dx += 1) {
+        let ex = tx-dx
+        let dd = 1
+        let tile = this.tileAt(ex, 0)
+        if (ex < 0 || tile !== undefined) {
+          ex = tx+dx
+          dd = -1
+          tile  = this.tileAt(ex, 0)
+        }
+        if (ex >= 0 && ex < this.size && tile === undefined) {
+          for (let mx = ex; mx != tx; mx += dd) {
+            const tile = this.tileAt(mx+dd, 0)
+            tile?.dropOn(mx, 0, this, true)
+          }
+          return true
+        }
+      }
     }
-    return false
+
+    // if all else fails, just swap the two tiles
+    return obj.dropWithSwap(tx, 0, this)
   }
 
   unusedSlots(): number[] {
