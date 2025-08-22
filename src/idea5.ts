@@ -1,4 +1,5 @@
 import { Application, Container } from "pixi.js"
+import { FancyButton } from "@pixi/ui"
 import { Idea } from "./idea"
 import { Dragger } from "./dragger"
 import { mkButton, buttonSize } from "./ui"
@@ -78,6 +79,9 @@ export class Idea5 extends Idea {
       "(possibly less common) five letter word."
   ]}
 
+  rowViews :Array<RowView> = []
+  hintButton :FancyButton
+
   constructor(app :Application) {
     super(app)
 
@@ -99,21 +103,19 @@ export class Idea5 extends Idea {
     }
 
     let correctRows = new Set<string>()
-    let rowViews :Array<RowView> = []
+    const rowViews = this.rowViews
     const rows = decode(puzzles[Math.floor(Math.random() * puzzles.length)])
     for (const row of rows) {
       rowViews.push(addRow(row, correct => {
         if (correct) correctRows.add(row)
         else correctRows.delete(row)
         // console.log(`${row} correct: ${correct} (total: ${correctRows.size})`)
-        if (correctRows.size == 5) {
-          rowViews.forEach(rv => rv.markCorrect())
-        }
+        if (correctRows.size == 5) this.endGame()
       }))
     }
 
     let usedHints = 0
-    const hintButton = mkButton("Hint", 2.5*buttonSize)
+    const hintButton = this.hintButton = mkButton("Hint", 2.5*buttonSize)
     hintButton.onPress.connect(() => {
       for (const row of rowViews) row.doHint(usedHints)
       usedHints += 1
@@ -124,5 +126,10 @@ export class Idea5 extends Idea {
     hintButton.x = screenWidth/2
     hintButton.y = racky + hintButton.height + hintButton.height / 2 + tileSize
     this.addChild(hintButton)
+  }
+
+  endGame () {
+    this.rowViews.forEach(rv => rv.markCorrect())
+    this.hintButton.enabled = false
   }
 }
