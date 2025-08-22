@@ -1,8 +1,8 @@
-import { Application, Container } from "pixi.js"
+import { Application, Container, Text } from "pixi.js"
 import { FancyButton } from "@pixi/ui"
 import { Idea } from "./idea"
 import { Dragger } from "./dragger"
-import { mkButton, buttonSize } from "./ui"
+import { mkButton, buttonSize, buttonTextStyle } from "./ui"
 import { RackView, tileSize } from "./view"
 import { sattoloShuffle } from "./util"
 import { puzzles } from "./idea5puzzles"
@@ -10,7 +10,7 @@ import { puzzles } from "./idea5puzzles"
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 function decode (puzzle :string) {
   const words :string[] = []
-  for (let xx = 0; xx < puzzle.length; xx += 6) {
+  for (let xx = 0; xx < 5*6; xx += 6) {
     let encword = Number(`0x${puzzle.substring(xx, xx+6)}`)
     let word = ""
     for (let ii = 0; ii < 5; ii += 1) {
@@ -19,7 +19,8 @@ function decode (puzzle :string) {
     }
     words.push(word)
   }
-  return words
+  const stars = Number(puzzle.charAt(puzzle.length-1))
+  return {words, stars}
 }
 
 export class RowView extends RackView {
@@ -80,17 +81,22 @@ export class Idea5 extends Idea {
   ]}
 
   rowViews :Array<RowView> = []
+  starsLabel :string
+  infoText :Text
   hintButton :FancyButton
+  startTime :number
 
   constructor(app :Application) {
     super(app)
 
     this.hitArea = app.screen
     this.sortableChildren = true
+    this.startTime = Date.now()
 
     const screenWidth = app.view.width / window.devicePixelRatio
     const screenHeight = app.view.height / window.devicePixelRatio
-    let racky = (screenHeight - 5*tileSize) / 2
+    const racktop = (screenHeight - 5*tileSize) / 2
+    let racky = racktop
     const addRow = (word :string, onDrop :(correct: boolean) => void) => {
       const row = new RowView(this)
       row.onShuffled = onDrop
@@ -102,17 +108,27 @@ export class Idea5 extends Idea {
       return row
     }
 
-    let correctRows = new Set<string>()
+    let correctWords = new Set<string>()
     const rowViews = this.rowViews
-    const rows = decode(puzzles[Math.floor(Math.random() * puzzles.length)])
-    for (const row of rows) {
-      rowViews.push(addRow(row, correct => {
-        if (correct) correctRows.add(row)
-        else correctRows.delete(row)
+    const puztxt = puzzles[Math.floor(Math.random() * puzzles.length)]
+    console.log(puztxt)
+    const {words, stars} = decode(puztxt)
+    console.log(words)
+    for (const word of words) {
+      rowViews.push(addRow(word, correct => {
+        if (correct) correctWords.add(word)
+        else correctWords.delete(word)
         // console.log(`${row} correct: ${correct} (total: ${correctRows.size})`)
-        if (correctRows.size == 5) this.endGame()
+        if (correctWords.size == 5) this.endGame()
       }))
     }
+
+    const starsLabel = this.starsLabel = "*".repeat(stars)
+    const infoText = this.infoText = new Text(`Difficulty: ${starsLabel}`, buttonTextStyle)
+    infoText.anchor.set(0.5)
+    infoText.x = screenWidth / 2
+    infoText.y = racky + tileSize
+    this.addChild(infoText)
 
     let usedHints = 0
     const hintButton = this.hintButton = mkButton("Hint", 2.5*buttonSize)
@@ -131,5 +147,8 @@ export class Idea5 extends Idea {
   endGame () {
     this.rowViews.forEach(rv => rv.markCorrect())
     this.hintButton.enabled = false
+    let seconds = Math.floor((Date.now() - this.startTime) / 1000)
+    let mins = Math.floor(seconds / 60), secs = String(seconds % 60).padStart(2, '0')
+    this.infoText.text = `Completed ${this.starsLabel} in ${mins}:${secs}!`
   }
 }
