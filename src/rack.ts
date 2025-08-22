@@ -33,8 +33,8 @@ export abstract class RackIdea extends Idea {
     const boardRackGap = 30,
       rackButtonsGap = 20
     const uiHeight = board.height + boardRackGap + rack.height + rackButtonsGap + buttonSize
-    const screenWidth = app.view.width / 2,
-      screenHeight = app.view.height / 2
+    const screenWidth = app.view.width / window.devicePixelRatio
+    const screenHeight = app.view.height / window.devicePixelRatio
 
     board.x = (screenWidth - board.width) / 2
     board.y = (screenHeight - uiHeight) / 2

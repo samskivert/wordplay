@@ -31,14 +31,15 @@ class MenuView extends Container {
     super()
 
     // manual layout, so awesome!
+    const screenWidth = app.view.width / window.devicePixelRatio
+    const screenHeight = app.view.height / window.devicePixelRatio
     const buttonWidth = buttonSize * 1.5
     const buttonGap = 20
-    const cols = Math.min(games.length, 5)
+    const maxCols = Math.min(Math.floor((screenWidth - buttonGap) / (buttonWidth + buttonGap)), 5)
+    const cols = Math.min(games.length, maxCols)
     const rows = Math.ceil(games.length / cols)
     const menuWidth = cols * buttonWidth + (cols - 1) * buttonGap
     const menuHeight = rows * buttonSize + (rows - 1) * buttonGap
-    const screenWidth = app.view.width / 2
-    const screenHeight = app.view.height / 2
     const startx = (screenWidth - menuWidth) / 2 + buttonWidth / 2
 
     let xx = startx, yy = (screenHeight - menuHeight) / 2 + buttonSize / 2, col = 0

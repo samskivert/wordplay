@@ -84,8 +84,8 @@ export class Idea5 extends Idea {
     this.hitArea = app.screen
     this.sortableChildren = true
 
-    const screenWidth = app.view.width / 2
-    const screenHeight = app.view.height / 2
+    const screenWidth = app.view.width / window.devicePixelRatio
+    const screenHeight = app.view.height / window.devicePixelRatio
     let racky = (screenHeight - 5*tileSize) / 2
     const addRow = (word :string, onDrop :(correct: boolean) => void) => {
       const row = new RowView(this)
