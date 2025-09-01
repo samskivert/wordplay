@@ -98,6 +98,22 @@ export class Board {
     return false
   }
 
+  onTiles (op :(x :number, y :number, l :string, p :boolean) => void) {
+    const pending = this.pending
+    for (const [key, tile] of this.tiles.entries()) {
+      const coord = toCoord(key)
+      op(coord[0], coord[1], tile, pending.has(key))
+    }
+  }
+
+  onPendingTiles(op: (x: number, y: number, l: string) => void) {
+    const { tiles, pending } = this
+    for (const key of pending) {
+      const coord = toCoord(key)
+      op(coord[0], coord[1], tiles.get(key)!)
+    }
+  }
+
   private findPlayedWord(tx: number, ty: number, dx: number, dy: number): Word | null {
     let x = tx,
       y = ty
@@ -121,24 +137,5 @@ export class Board {
       maxY = y - dy
     // make sure the word is at least two letters long
     return minX == maxX && minY == maxY ? null : { word, minX, maxX, minY, maxY }
-  }
-
-  // private onTiles (op :(x :number, y :number, l :string, p :boolean) => void) {
-  //   const {tiles, pending, size} = this
-  //   for (let y = 0; y < size; y += 1) {
-  //     for (let x = 0; x < size; x += 1) {
-  //       const l = tiles[y][x]
-  //       if (l != null) op(x, y, l, pending.has(toKey(x, y)))
-  //     }
-  //   }
-  // }
-
-  private onPendingTiles(op: (x: number, y: number, l: string) => void) {
-    const { tiles, pending } = this
-    for (const key of pending) {
-      const coord = toCoord(key),
-        tile = tiles.get(key)!
-      op(coord[0], coord[1], tile)
-    }
   }
 }

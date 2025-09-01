@@ -5,6 +5,7 @@ import {
   DisplayObject,
   Graphics,
   FederatedPointerEvent,
+  ObservablePoint,
   Rectangle,
   TextStyle,
   Text,
@@ -43,6 +44,19 @@ function tweenTime(ox: number, oy: number, nx: number, ny: number, vel: number) 
   const dy = ny - oy
   const dist = Math.sqrt(dx * dx + dy * dy)
   return Math.max(dist / vel, minTweenTime)
+}
+
+function move(
+  pos :ObservablePoint<any>, x :number, y :number, tween :boolean,
+  onArrive: (() => void) | null = null
+) {
+  if (tween) {
+    const tt = gsap.to(pos, { x, y, duration: tweenTime(pos.x, pos.y, x, y, tileVel) })
+    if (onArrive != null) tt.then(onArrive)
+  } else {
+    pos.set(x, y)
+    if (onArrive != null) onArrive()
+  }
 }
 
 const toKey = (tileX: number, tileY: number) => `${tileX}+${tileY}`
@@ -163,19 +177,8 @@ export class TileView extends Container implements Draggable {
     tween: boolean,
     onArrive: (() => void) | null = null
   ) {
-    const { x, y } = host.tilePos(tx, ty),
-      pos = this.position
-    if (tween) {
-      const tt = gsap.to(pos, {
-        x,
-        y,
-        duration: tweenTime(pos.x, pos.y, x, y, tileVel),
-      })
-      if (onArrive != null) tt.then(onArrive)
-    } else {
-      pos.set(x, y)
-      if (onArrive != null) onArrive()
-    }
+    const { x, y } = host.tilePos(tx, ty)
+    move(this.position, x, y, tween, onArrive)
   }
 
   /** Places this tile at tx/ty on host without checking whether another tile is there. */
@@ -271,6 +274,7 @@ function drawWells(gfx: Graphics, width: number, height: number, hexOffset: bool
 
 export class BoardView extends Container implements DropTarget {
   private tiles = new Map<string, TileView>()
+  private glyphs = new Map<string, DisplayObject>()
   private offsetX = 0
   private offsetY = 0
   readonly stage: Container
@@ -301,6 +305,7 @@ export class BoardView extends Container implements DropTarget {
     this.hexOffset = hexOffset
 
     const gfx = new Graphics()
+    gfx.zIndex = -1
     drawWells(gfx, width, height, this.hexOffset)
     this.addChild(gfx)
   }
@@ -317,6 +322,26 @@ export class BoardView extends Container implements DropTarget {
     }
 
     return { x: tx, y: ty }
+  }
+
+  get glyphCount() :number {
+    return this.glyphs.size
+  }
+
+  addGlyph(tileX :number, tileY :number, glyph :DisplayObject) {
+    this.glyphs.set(toKey(tileX, tileY), glyph)
+    const { x, y } = this.tilePos(tileX, tileY)
+    glyph.position.set(x, y)
+    this.stage.addChild(glyph)
+  }
+
+  clearGlyph(tileX :number, tileY :number) {
+    const key = toKey(tileX, tileY)
+    const glyph = this.glyphs.get(key)
+    if (glyph) {
+      this.glyphs.delete(key)
+      glyph.destroy() // TODO: animation?
+    }
   }
 
   addStartWord(word: string, startX: number, y: number) {
@@ -345,6 +370,10 @@ export class BoardView extends Container implements DropTarget {
       x: this.x + vx * tileSize + tileSize / 2,
       y: this.y + vy * tileSize + tileSize / 2 + dy,
     }
+  }
+
+  onTiles(op :(tile :TileView) => void) {
+    for (const tile of this.tiles.values()) op(tile)
   }
 
   hosted(tile: TileView) {
@@ -474,14 +503,48 @@ export class RackView extends Container implements DropTarget {
   }
 
   addTile(text: string): TileView {
-    const tile = new TileView(text, { fillColor: rackTileColor })
-    for (let x = 0; x < this.size; x += 1) {
-      if (this.tiles.has(toKey(x, 0))) continue
-      tile.dropOn(x, 0, this, false)
-      this.stage.addChild(tile)
-      return tile
+    for (let xx = 0; xx < this.size; xx += 1) {
+      if (this.tiles.has(toKey(xx, 0))) continue
+      return this._addTileAt(xx, text)
     }
     throw new Error(`Cannot add tile (${text}) to full rack.`)
+  }
+
+  /** Adds a tile at `pos`.
+    * @return the added tile view if the tile was added, `null` if `pos` was already occupied. */
+  addTileAt(pos :number, text :string) :TileView | null {
+    if (this.tiles.has(toKey(pos, 0))) return null
+    return this._addTileAt(pos, text)
+  }
+
+  private _addTileAt(pos :number, text :string) :TileView {
+    const tile = new TileView(text, { fillColor: rackTileColor })
+    tile.dropOn(pos, 0, this, false)
+    this.stage.addChild(tile)
+    return tile
+  }
+
+  clearTiles(animate :boolean) {
+    for (let ii = 0; ii < this.tileCount; ii += 1) {
+      const tile = this.tileAt(ii, 0)
+      if (tile) {
+        if (animate) tile.shrinkAndDestroy()
+        else tile.destroy()
+      }
+    }
+    this.tiles.clear()
+  }
+
+  /** Puts non-interactive tiles on the rack that display `text`. `text` must be fewer letters than
+    * the size of the rack and spaces will result in skipped tile positions. */
+  showMessage(text :string) {
+    let offX = Math.floor((this.size - text.length) / 2)
+    for (let ii = 0, ll = Math.min(this.size, text.length); ii < ll; ii += 1) {
+      const letter = text.charAt(ii)
+      if (letter == " ") continue
+      const tile = this.addTileAt(offX + ii, letter)!
+      tile.makeCommitted()
+    }
   }
 
   tileAt(tileX: number, tileY: number): TileView | undefined {

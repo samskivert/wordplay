@@ -28,6 +28,12 @@ export const buttonTextStyle = {
   fill: colors.grey1,
 }
 
+export const labelStyle = {
+  fontFamily: "Courier",
+  fontSize: 24,
+  fill: colors.grey1,
+}
+
 function buttonFace(width: number, height: number, fill: ColorSource, outline: ColorSource) {
   const corner = Math.min(width, height) / 5
   return new Graphics()

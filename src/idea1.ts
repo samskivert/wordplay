@@ -7,7 +7,10 @@ export class Idea1 extends RackIdea {
   ]}
 
   gameWillStart(): void {
-    this.board.addStartWord("START", 1, this.board.tileHeight - 1)
+    const board = this.board
+    this.addButton(3, "◀︎", () => board.slide(-1, 0))
+    this.addButton(4, "▶︎︎", () => board.slide(1, 0))
+    board.addStartWord("START", 1, board.tileHeight - 1)
   }
 
   playDidCommit(_word: Word[]) {
@@ -16,5 +19,6 @@ export class Idea1 extends RackIdea {
     if (board.board.haveTileIn(board.topRow)) {
       board.slide(0, Math.floor(board.tileHeight / 2), true)
     }
+    return false // TODO: when to end game
   }
 }

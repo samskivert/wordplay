@@ -7,10 +7,26 @@ import { Word } from "./board"
 import { checkWord } from "./dict"
 import { mkButton, buttonSize } from "./ui"
 
+export type Config = {
+  boardWidth :number
+  boardHeight :number
+  rackSize :number
+}
+
+const boardRackGap = 30, rackButtonsGap = 20
+
 export abstract class RackIdea extends Idea {
   readonly dragger: Dragger
   readonly board: BoardView
   readonly rack: RackView
+
+  protected get config() :Config {
+    return {
+      boardWidth: 7,
+      boardHeight: 10,
+      rackSize: 7,
+    }
+  }
 
   constructor(app: Application) {
     super(app)
@@ -20,18 +36,17 @@ export abstract class RackIdea extends Idea {
     this.dragger = dragger
     this.sortableChildren = true
 
-    const board = new BoardView(this, 7, 10)
+    const config = this.config
+    const board = new BoardView(this, config.boardWidth, config.boardHeight)
     this.board = board
     this.addChild(board)
     dragger.addDropTarget(board)
 
-    const rack = new RackView(this, 7)
+    const rack = new RackView(this, config.rackSize)
     this.rack = rack
     this.addChild(rack)
     dragger.addDropTarget(rack)
 
-    const boardRackGap = 30,
-      rackButtonsGap = 20
     const uiHeight = board.height + boardRackGap + rack.height + rackButtonsGap + buttonSize
     const screenWidth = app.view.width / window.devicePixelRatio
     const screenHeight = app.view.height / window.devicePixelRatio
@@ -49,21 +64,10 @@ export abstract class RackIdea extends Idea {
     }
     addTilesToRack(rack.size)
 
-    const addButton = (xx: number, text: string, onClick: () => void) => {
-      const button = mkButton(text, buttonSize)
-      button.onPress.connect(onClick)
-      button.x = rack.x + tileSize * xx + tileSize / 2
-      button.y = rack.y + button.height + button.height / 2 + rackButtonsGap
-      this.addChild(button)
-      return button
-    }
+    this.addButton(0, "▼", () => board.returnToRack(rack))
+    this.addButton(1, "↺", () => rack.shuffle())
 
-    addButton(0, "▼", () => board.returnToRack(rack))
-    addButton(1, "↺", () => rack.shuffle())
-    addButton(3, "◀︎", () => board.slide(-1, 0))
-    addButton(4, "▶︎︎", () => board.slide(1, 0))
-
-    const play = addButton(6, "▲", () => {
+    const play = this.addButton(6, "✓", () => {
       const words = board.board.pendingWords()
       for (const word of words) {
         if (!checkWord(word.word)) {
@@ -81,6 +85,15 @@ export abstract class RackIdea extends Idea {
     this.gameWillStart()
   }
 
+  protected addButton (xx: number, text: string, onClick: () => void) {
+    const button = mkButton(text, buttonSize)
+    button.onPress.connect(onClick)
+    button.x = this.rack.x + tileSize * xx + tileSize / 2
+    button.y = this.rack.y + button.height + button.height / 2 + rackButtonsGap
+    this.addChild(button)
+    return button
+  }
+
   abstract gameWillStart(): void
-  abstract playDidCommit(words: Word[]): void
+  abstract playDidCommit(words: Word[]): boolean
 }
