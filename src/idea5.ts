@@ -29,7 +29,7 @@ export class RowView extends RackView {
   word = ""
 
   constructor (stage :Container) {
-    super(stage, 5)
+    super(stage, { size: 5 })
     this.dragger = new Dragger(stage)
     this.dragger.addDropTarget(this)
   }

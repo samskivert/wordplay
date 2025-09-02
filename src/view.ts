@@ -60,8 +60,9 @@ function move(
 }
 
 const toKey = (tileX: number, tileY: number) => `${tileX}+${tileY}`
+const makeTile = (letter :string, config? :TileConfig) => new TileView(letter, config)
 
-type TileConfig = {
+export type TileConfig = {
   fillColor?: ColorSource
   size?: number
   borderWidth?: number
@@ -70,13 +71,16 @@ type TileConfig = {
 export class TileView extends Container implements Draggable {
   private bg: Graphics
   private text: Text
-  private normalColor: ColorSource
-  private borderWidth: number
+  private config? :TileConfig
 
-  private _size: number
+  private get normalColor () { return this.config?.fillColor ?? boardTileColor }
+  private get borderWidth () { return this.config?.borderWidth ?? 2 }
+
+  /** The size of the text on the tile (`5` to `1`). */
   get size() {
     return this._size
   }
+  private _size: number
 
   readonly letter: string
   tileX = 0
@@ -97,15 +101,13 @@ export class TileView extends Container implements Draggable {
   constructor(letter: string, config?: TileConfig) {
     super()
     this.letter = letter
-    const fillColor = config?.fillColor ?? boardTileColor
-    this.normalColor = fillColor
+    this.config = config
     const size = config?.size ?? defaultSize
     this._size = size
-    this.borderWidth = config?.borderWidth ?? 2
 
     const gfx = new Graphics()
     this.addChild((this.bg = gfx))
-    this.setColor(fillColor)
+    this.setColor(this.normalColor)
 
     const text = (this.text = new Text(letter, textStyles[defaultSize - size]))
     text.anchor.set(0.5)
@@ -126,11 +128,13 @@ export class TileView extends Container implements Draggable {
     return Math.abs(localX) <= hotZoneHalfSize && Math.abs(localY) <= hotZoneHalfSize
   }
 
-  makeCommitted() {
-    this.setColor(boardTileColor)
+  makeCommitted(fillColor? :ColorSource) {
+    this.setColor(fillColor ?? boardTileColor)
     this.onpointerdown = null
   }
 
+  /** Sets the size of the text on the tile.
+    * @param size The desired size: `5` (largest) to `1` (smallest). */
   setSize(size: number) {
     this._size = size
     this.text.style = textStyles[defaultSize - size]
@@ -272,41 +276,41 @@ function drawWells(gfx: Graphics, width: number, height: number, hexOffset: bool
   }
 }
 
+export type BoardConfig = {
+  width :number
+  height :number
+  hexOffset? :boolean
+  commitColor? :ColorSource
+  makeTile? :(letter :string, config? :TileConfig) => TileView
+}
+
 export class BoardView extends Container implements DropTarget {
   private tiles = new Map<string, TileView>()
   private glyphs = new Map<string, DisplayObject>()
   private offsetX = 0
   private offsetY = 0
+  private config :BoardConfig
   readonly stage: Container
   readonly tilesValid = Mutable.local(false)
-  readonly tileWidth: number
-  readonly tileHeight: number
   readonly board = new Board()
-  readonly hexOffset: boolean
 
-  get topRow(): number {
-    return -this.offsetY
-  }
-  get leftCol(): number {
-    return -this.offsetX
-  }
+  get tileWidth(): number { return this.config.width }
+  get tileHeight(): number { return this.config.height }
+  get hexOffset(): boolean { return this.config.hexOffset ?? false }
+  get topRow(): number { return -this.offsetY }
+  get leftCol(): number { return -this.offsetX }
 
-  constructor(stage: Container, width: number, height: number, hexOffset = false) {
+  constructor(stage: Container, config :BoardConfig) {
     super()
     this.stage = stage
-    this.tileWidth = width
-    this.tileHeight = height
-    this.hitArea = new Rectangle(
-      0,
-      0,
-      tileSize * width,
-      tileSize * height + (hexOffset ? tileSize / 2 : 0)
-    )
-    this.hexOffset = hexOffset
+    this.config = config
+    const hitWidth = tileSize * config.width
+    const hitHeight = tileSize * config.height + (this.hexOffset ? tileSize / 2 : 0)
+    this.hitArea = new Rectangle(0, 0, hitWidth, hitHeight)
 
     const gfx = new Graphics()
     gfx.zIndex = -1
-    drawWells(gfx, width, height, this.hexOffset)
+    drawWells(gfx, config.width, config.height, this.hexOffset)
     this.addChild(gfx)
   }
 
@@ -344,15 +348,15 @@ export class BoardView extends Container implements DropTarget {
     }
   }
 
-  addStartWord(word: string, startX: number, y: number) {
+  addStartWord(word: string, startX: number, y: number, config?: TileConfig) {
     for (let ii = 0; ii < word.length; ii += 1) {
-      this.addPendingTile(word.charAt(ii), startX + ii, y)
+      this.addTile(word.charAt(ii), startX + ii, y, config)
     }
-    this.commitPenders()
+    this.board.commitPending()
   }
 
-  addPendingTile(text: string, x: number, y: number, config?: TileConfig): TileView {
-    const tile = new TileView(text, config)
+  addTile(text: string, x: number, y: number, config?: TileConfig): TileView {
+    const tile = (this.config.makeTile ?? makeTile)(text, config)
     tile.dropOn(x, y, this, false)
     this.stage.addChild(tile)
     return tile
@@ -417,8 +421,9 @@ export class BoardView extends Container implements DropTarget {
 
   commitPenders() {
     this.board.commitPending()
+    const commitColor = this.config.commitColor ?? boardTileColor
     for (const tile of this.tiles.values()) {
-      if (tile.draggable) tile.makeCommitted()
+      if (tile.draggable) tile.makeCommitted(commitColor)
     }
   }
 
@@ -472,19 +477,25 @@ export class BoardView extends Container implements DropTarget {
   }
 }
 
+export type RackConfig = {
+  size :number
+  makeTile? :(letter :string, config? :TileConfig) => TileView
+}
+
 export class RackView extends Container implements DropTarget {
   private tiles = new Map<string, TileView>()
+  private makeTile :(letter :string, config? :TileConfig) => TileView
   readonly stage: Container
   readonly size: number
 
   // a callback if someone wants to hook into when this rack is rearranged
   onRearranged :(letters :string) => void = () => {}
 
-  constructor(stage: Container, size: number) {
+  constructor(stage: Container, config: RackConfig) {
     super()
     this.stage = stage
-    this.size = size
-
+    this.size = config.size
+    this.makeTile = config.makeTile ?? makeTile
     const gfx = new Graphics()
     drawWells(gfx, this.size, 1, false)
     this.addChild(gfx)
@@ -518,7 +529,7 @@ export class RackView extends Container implements DropTarget {
   }
 
   private _addTileAt(pos :number, text :string) :TileView {
-    const tile = new TileView(text, { fillColor: rackTileColor })
+    const tile = this.makeTile(text, { fillColor: rackTileColor })
     tile.dropOn(pos, 0, this, false)
     this.stage.addChild(tile)
     return tile

@@ -1,6 +1,6 @@
 import { Application } from "pixi.js"
 import { Bag } from "./bag"
-import { BoardView, RackView, tileSize } from "./view"
+import { BoardConfig, BoardView, RackConfig, RackView, tileSize } from "./view"
 import { Dragger } from "./dragger"
 import { Idea } from "./idea"
 import { Word } from "./board"
@@ -8,9 +8,8 @@ import { checkWord } from "./dict"
 import { mkButton, buttonSize } from "./ui"
 
 export type Config = {
-  boardWidth :number
-  boardHeight :number
-  rackSize :number
+  board :BoardConfig
+  rack :RackConfig
 }
 
 const boardRackGap = 30, rackButtonsGap = 20
@@ -22,9 +21,8 @@ export abstract class RackIdea extends Idea {
 
   protected get config() :Config {
     return {
-      boardWidth: 7,
-      boardHeight: 10,
-      rackSize: 7,
+      board: { width: 7, height: 10 },
+      rack: { size: 7 },
     }
   }
 
@@ -37,12 +35,12 @@ export abstract class RackIdea extends Idea {
     this.sortableChildren = true
 
     const config = this.config
-    const board = new BoardView(this, config.boardWidth, config.boardHeight)
+    const board = new BoardView(this, config.board)
     this.board = board
     this.addChild(board)
     dragger.addDropTarget(board)
 
-    const rack = new RackView(this, config.rackSize)
+    const rack = new RackView(this, config.rack)
     this.rack = rack
     this.addChild(rack)
     dragger.addDropTarget(rack)

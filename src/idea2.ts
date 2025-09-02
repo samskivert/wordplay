@@ -9,7 +9,7 @@ export class Idea2 extends DragIdea {
   ]}
 
   protected createBoard () {
-    return new BoardView(this, 6, 9, true)
+    return new BoardView(this, { width: 6, height: 9, hexOffset: true })
   }
 
   protected gameWillStart (board :BoardView) {
@@ -17,10 +17,9 @@ export class Idea2 extends DragIdea {
     for (let yy = 0; yy < board.tileHeight; yy += 1) {
       for (let xx = 0; xx < board.tileWidth; xx += 1) {
         const tile = bag.draw()
-        board.addPendingTile(tile, xx, yy)
+        board.addTile(tile, xx, yy)
       }
     }
-    board.commitPenders()
   }
 
   protected onDragComplete (board :BoardView, chain : {x :number, y :number}[]) {

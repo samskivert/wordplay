@@ -19,7 +19,7 @@ export class Idea3 extends DragIdea {
   private bag = new Bag(["Q"]) // no Qs here, too annoying
 
   protected createBoard () :BoardView {
-    return new BoardView(this, 7, 7, true)
+    return new BoardView(this, { width: 7, height: 7, hexOffset: true })
   }
 
   protected gameWillStart (board :BoardView) {
@@ -32,11 +32,10 @@ export class Idea3 extends DragIdea {
       const maxy = board.tileHeight - Math.floor(dx / 2)
       for (let yy = miny; yy < maxy; yy += 1) {
         const letter = this.bag.draw()
-        const tile = board.addPendingTile(letter, xx, yy, { fillColor: startColor })
+        const tile = board.addTile(letter, xx, yy, { fillColor: startColor })
         this.coords.add(tile.key)
       }
     }
-    board.commitPenders()
   }
 
   protected onDragComplete (board :BoardView, chain : {x :number, y :number}[]) {
@@ -55,13 +54,12 @@ export class Idea3 extends DragIdea {
       if (tile) {
         this.coords.delete(tile.key)
         tile.shrinkAndDestroy()
-        board.addPendingTile(this.bag.draw(), x, y, {
+        board.addTile(this.bag.draw(), x, y, {
           size: tile.size - 1,
           fillColor: flippedColor,
         })
       }
     }
-    board.commitPenders()
     if (this.coords.size === 0) {
       this.drag.enabled = false
       this.showComplete()
