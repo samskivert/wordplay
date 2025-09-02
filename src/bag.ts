@@ -34,6 +34,8 @@ const tileDist = new Map([
   ["Z", 1],
 ])
 
+const vowels = new Set(["A", "E", "I", "O", "U"])
+
 export class Bag {
   private tiles: string[]
 
@@ -54,5 +56,25 @@ export class Bag {
 
   draw(): string {
     return this.tiles.pop() ?? "?"
+  }
+
+  drawVowel(): string {
+    return this.drawFiltered(l => vowels.has(l))
+  }
+
+  drawConsonant(): string {
+    return this.drawFiltered(l => !vowels.has(l))
+  }
+
+  drawFiltered(filter :(letter :string) => boolean): string {
+    const tiles = this.tiles
+    for (let ii = 0; ii < tiles.length; ii += 1) {
+      const letter = tiles[ii]
+      if (filter(letter)) {
+        tiles.splice(ii, 1)
+        return letter
+      }
+    }
+    return "?"
   }
 }
