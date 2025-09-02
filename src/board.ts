@@ -47,10 +47,7 @@ export class Board {
   }
 
   pendingValid(): boolean {
-    let minx = Max,
-      maxx = -Max,
-      miny = Max,
-      maxy = -Max
+    let minx = Max, maxx = -Max, miny = Max, maxy = -Max
     this.onPendingTiles((x, y, _) => {
       minx = Math.min(minx, x)
       maxx = Math.max(maxx, x)
@@ -60,16 +57,14 @@ export class Board {
     // make sure we have at least one tile and they're all in a line
     if (maxx < minx || (maxx - minx > 0 && maxy - miny > 0)) return false
     // make sure there are no gaps
-    for (let yy = miny; yy <= maxy; yy += 1)
-      for (let xx = minx; xx <= maxx; xx += 1) {
-        if (!this.tileAt(xx, yy)) return false
-      }
+    for (let yy = miny; yy <= maxy; yy += 1) for (let xx = minx; xx <= maxx; xx += 1) {
+      if (!this.tileAt(xx, yy)) return false
+    }
     // make sure at least one pending tile is adjacent to a fixed tile
     let found = false
     this.onPendingTiles((x, y, _) => {
       for (let dd = 0; !found && dd < 4; dd += 1) {
-        const nx = x + dx[dd],
-          ny = y + dy[dd]
+        const nx = x + dx[dd], ny = y + dy[dd]
         if (this.tileAt(nx, ny) && !this.pending.has(toKey(nx, ny))) found = true
       }
     })
