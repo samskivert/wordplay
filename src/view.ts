@@ -68,6 +68,8 @@ export type TileConfig = {
   borderWidth?: number
 }
 
+function noopOnSelected (_view :TileView) {}
+
 export class TileView extends Container implements Draggable {
   private bg: Graphics
   private text: Text
@@ -77,9 +79,7 @@ export class TileView extends Container implements Draggable {
   private get borderWidth () { return this.config?.borderWidth ?? 2 }
 
   /** The size of the text on the tile (`5` to `1`). */
-  get size() {
-    return this._size
-  }
+  get size() { return this._size }
   private _size: number
 
   readonly letter: string
@@ -94,6 +94,10 @@ export class TileView extends Container implements Draggable {
   get draggable() {
     return this.onpointerdown != null
   }
+
+  get selected() { return this._selected }
+  private _selected = false
+  private onSelected = noopOnSelected
 
   // Drag hot zone configuration
   private static readonly dragHotZoneRatio = 0.7
@@ -126,6 +130,20 @@ export class TileView extends Container implements Draggable {
     const hotZoneHalfSize = hotZoneSize / 2
 
     return Math.abs(localX) <= hotZoneHalfSize && Math.abs(localY) <= hotZoneHalfSize
+  }
+
+  makeSelectable(onSelected :(view :TileView) => void) {
+    this.eventMode = "dynamic"
+    this.onpointerdown = () => this.setSelected(!this._selected)
+    this.onSelected = onSelected
+  }
+
+  setSelected(selected :boolean) {
+    this._selected = selected
+    // TODO: selected color and/or scale
+    const scale = selected ? 1.2 : 1
+    this.scale.set(scale, scale)
+    this.onSelected(this)
   }
 
   makeCommitted(fillColor? :ColorSource) {
