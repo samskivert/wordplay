@@ -59,6 +59,25 @@ function move(
   }
 }
 
+export function shake(pos :ObservablePoint<any>, offset: number, duration: number) {
+  const initialX = pos.x, initialY = pos.y
+  const tl = gsap.timeline({ repeat: -1 })
+  tl.to(pos, {
+    duration: 0.05,
+    x: initialX - offset,
+    ease: "slow",
+  })
+  tl.to(pos, {
+    duration: 0.05,
+    x: initialX + offset,
+    ease: "slow",
+  })
+  setTimeout(() => {
+    tl.kill()
+    pos.set(initialX, initialY)
+  }, duration * 1000)
+}
+
 const toKey = (tileX: number, tileY: number) => `${tileX}+${tileY}`
 const makeTile = (letter :string, config? :TileConfig) => new TileView(letter, config)
 
@@ -138,12 +157,12 @@ export class TileView extends Container implements Draggable {
     this.onSelected = onSelected
   }
 
-  setSelected(selected :boolean) {
+  setSelected(selected :boolean, skipNotify = false) {
     this._selected = selected
     // TODO: selected color and/or scale
     const scale = selected ? 1.2 : 1
     this.scale.set(scale, scale)
-    this.onSelected(this)
+    if (!skipNotify) this.onSelected(this)
   }
 
   makeCommitted(fillColor? :ColorSource) {
@@ -234,23 +253,7 @@ export class TileView extends Container implements Draggable {
   }
 
   shake(offset: number, duration: number) {
-    const initialX = this.x,
-      initialY = this.y
-    const tl = gsap.timeline({ repeat: -1 })
-    tl.to(this.position, {
-      duration: 0.05,
-      x: initialX - offset,
-      ease: "slow",
-    })
-    tl.to(this.position, {
-      duration: 0.05,
-      x: initialX + offset,
-      ease: "slow",
-    })
-    setTimeout(() => {
-      tl.kill()
-      this.position.set(initialX, initialY)
-    }, duration * 1000)
+    shake(this.position, offset, duration)
   }
 
   // from Draggable
