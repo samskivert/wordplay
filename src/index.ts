@@ -6,6 +6,7 @@ import { Idea3 } from "./idea3"
 import { Idea4 } from "./idea4"
 import { Idea5 } from "./idea5"
 import { Idea6 } from "./idea6"
+import { Idea7 } from "./idea7"
 import { mkButton, buttonSize, titleStyle } from "./ui"
 
 const app = new Application({
@@ -26,6 +27,7 @@ const games :Maker[] = [
   (app) => new Idea4(app),
   (app) => new Idea5(app),
   (app) => new Idea6(app),
+  (app) => new Idea7(app),
 ]
 
 class MenuView extends Container {
